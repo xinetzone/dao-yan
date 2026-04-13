@@ -4,11 +4,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider} from "react-router-dom";
 import { routers } from "./router";
+import { useTranslation } from 'react-i18next';
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const { ready } = useTranslation();
   const router = createBrowserRouter(routers);
+  
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

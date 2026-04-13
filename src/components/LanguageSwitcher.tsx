@@ -19,7 +19,9 @@ export function LanguageSwitcher() {
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
   const changeLanguage = (langCode: string) => {
-    i18n.changeLanguage(langCode);
+    i18n.changeLanguage(langCode).catch((err) => {
+      console.error('Failed to change language:', err);
+    });
   };
 
   return (
