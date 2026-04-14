@@ -12,7 +12,7 @@ interface ToolUse {
   input: Record<string, unknown>;
 }
 
-async function callWebSearch(query: string, timeoutMs = 20000): Promise<Array<{ title: string; url: string; snippet: string }>> {
+async function callWebSearch(query: string, timeoutMs = 15000): Promise<Array<{ title: string; url: string; snippet: string }>> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -41,7 +41,7 @@ async function callWebSearch(query: string, timeoutMs = 20000): Promise<Array<{ 
   }
 }
 
-async function fetchUrlContent(url: string, timeoutMs = 15000): Promise<{ content: string; title: string }> {
+async function fetchUrlContent(url: string, timeoutMs = 10000): Promise<{ content: string; title: string }> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -246,20 +246,28 @@ Deno.serve(async (req) => {
                   query
                 })}\n\n`));
 
-                // Fetch content from top 3 results with individual progress updates
+                // Fetch content from top 2 results only (reduced from 3 to speed up)
                 const contents: Array<{ content: string; title: string }> = [];
-                const urlsToFetch = searchResults.slice(0, 3);
+                const urlsToFetch = searchResults.slice(0, 2);
                 
                 for (let i = 0; i < urlsToFetch.length; i++) {
-                  // Send progress keepalive
+                  // Send progress keepalive before fetch
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({
                     type: "search_status",
                     status: "fetching_content",
-                    progress: `${i + 1}/${urlsToFetch.length}`
+                    progress: `${i + 1}/${urlsToFetch.length}`,
+                    url: urlsToFetch[i].url
                   })}\n\n`));
                   
                   const content = await fetchUrlContent(urlsToFetch[i].url);
                   contents.push(content);
+                  
+                  // Send keepalive after successful fetch
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                    type: "search_status",
+                    status: "fetched",
+                    progress: `${i + 1}/${urlsToFetch.length}`
+                  })}\n\n`));
                 }
 
                 // Build tool result
