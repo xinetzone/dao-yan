@@ -54,22 +54,22 @@ export default function Index() {
     <div className="flex flex-col h-full w-full bg-background">
       {!hasStartedChat ? (
         <div className="flex flex-col items-center justify-center min-h-full px-4 sm:px-6 py-20 sm:py-12">
-          <div className="absolute top-20 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 sm:gap-2 z-50">
+          <div className="absolute top-20 right-4 sm:top-6 sm:right-6 flex items-center gap-2 z-50">
             <button
               onClick={() => navigate("/cultivate")}
-              className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-border/40 hover:border-border shadow-sm hover:shadow"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-border/40 hover:border-border shadow-sm hover:shadow min-h-[36px] sm:min-h-[40px]"
               title={isZh ? "今天你用心了嘛？" : "Cultivation Practice"}
             >
-              <Flame className="h-4 w-4" />
-              <span className="hidden md:inline">{isZh ? "修行" : "Cultivate"}</span>
+              <Flame className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+              <span className="hidden md:inline whitespace-nowrap">{isZh ? "修行" : "Cultivate"}</span>
             </button>
             <button
               onClick={() => setDocPanelOpen(true)}
-              className="relative flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-border/40 hover:border-border shadow-sm hover:shadow"
+              className="relative flex items-center justify-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-border/40 hover:border-border shadow-sm hover:shadow min-h-[36px] sm:min-h-[40px]"
               title={t("chat.docs")}
             >
-              <FolderOpen className="h-4 w-4" />
-              <span className="hidden md:inline">{t("chat.docs")}</span>
+              <FolderOpen className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+              <span className="hidden md:inline whitespace-nowrap">{t("chat.docs")}</span>
               {activeCollectionId && (
                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
               )}
@@ -130,19 +130,19 @@ export default function Index() {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => navigate("/cultivate")}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-transparent hover:border-border/40 min-h-[32px] sm:min-h-[36px]"
                   title={isZh ? "修行打卡" : "Cultivation"}
                 >
-                  <Flame className="h-4 w-4" />
-                  <span className="hidden lg:inline">{isZh ? "修行" : "Cultivate"}</span>
+                  <Flame className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+                  <span className="hidden lg:inline whitespace-nowrap">{isZh ? "修行" : "Cultivate"}</span>
                 </button>
                 <button
                   onClick={() => setDocPanelOpen(true)}
-                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
+                  className="relative flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-transparent hover:border-border/40 min-h-[32px] sm:min-h-[36px]"
                   title={t("chat.docs")}
                 >
-                  <FolderOpen className="h-4 w-4" />
-                  <span className="hidden lg:inline">{t("chat.docs")}</span>
+                  <FolderOpen className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+                  <span className="hidden lg:inline whitespace-nowrap">{t("chat.docs")}</span>
                   {activeCollectionId && (
                     <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
                   )}
@@ -152,11 +152,11 @@ export default function Index() {
                 </div>
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-transparent hover:border-border/40 min-h-[32px] sm:min-h-[36px]"
                   title={t('chat.newChat')}
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  <span className="hidden lg:inline">{t('chat.newChat')}</span>
+                  <RotateCcw className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+                  <span className="hidden lg:inline whitespace-nowrap">{t('chat.newChat')}</span>
                 </button>
               </div>
             </div>

@@ -32,10 +32,10 @@ export function LanguageSwitcher() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="border-border/40 hover:border-border shadow-sm hover:shadow transition-all gap-1.5 px-2.5 sm:px-3"
+          className="border-border/40 hover:border-border shadow-sm hover:shadow transition-all gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2.5 min-h-[36px] sm:min-h-[40px] h-auto"
         >
-          <Languages className="h-4 w-4" />
-          <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
+          <Languages className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
+          <span className="hidden sm:inline whitespace-nowrap">{currentLanguage.nativeName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
