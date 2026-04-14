@@ -43,7 +43,8 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
     content: string,
     model = "anthropic/claude-sonnet-4.5",
     documentContext?: string,
-    enableWebSearch?: boolean
+    enableWebSearch?: boolean,
+    locale?: string
   ) => {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -78,6 +79,7 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
           model,
           ...(documentContext ? { system: `You are a helpful research assistant. The user has provided the following reference documents to help answer their questions. Use this information as context when responding:\n\n${documentContext}` } : {}),
           ...(enableWebSearch ? { enable_web_search: true } : {}),
+          ...(locale ? { locale } : {}),
         }),
         signal: abortController.signal,
         openWhenHidden: true,

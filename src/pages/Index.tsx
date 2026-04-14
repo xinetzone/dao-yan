@@ -42,8 +42,8 @@ export default function Index() {
     if (activeCollectionId) {
       docContext = await getCollectionContext(activeCollectionId);
     }
-    sendMessage(query, "anthropic/claude-sonnet-4.5", docContext, webSearchEnabled);
-  }, [hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled]);
+    sendMessage(query, "anthropic/claude-sonnet-4.5", docContext, webSearchEnabled, i18n.language);
+  }, [hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled, i18n.language]);
 
   const handleReset = () => {
     clearMessages();
