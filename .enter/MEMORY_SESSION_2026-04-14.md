@@ -27,6 +27,24 @@ Full-day session with 20+ user requests spanning repository management, bug fixe
 - `5cd2c33` Pass i18n.language to edge function for locale-aware AI responses
 - `86d994a` Fix 5 critical bugs from full code review (see Bug History)
 
+### Phase 5: Security Hardening + Full Test + Accessibility Fix (14:30-15:10)
+- `ccb192d` Retrospect + update README + session memory (all phases documented)
+- `1d6bd2f` Security hardening (9 files, based on external security report):
+  - S1: `src/config.ts` new — single source for SUPABASE_URL, SUPABASE_ANON_KEY, AI_CHAT_ENDPOINT, MAX_MESSAGE_LENGTH, ALLOWED_URL_SCHEMES
+  - S1: `useAIChat.ts` — removed `supabaseUrl`/`supabaseAnonKey` params, imports from config
+  - S1: `Index.tsx` / `CultivationPage.tsx` — hardcoded constants removed, use config
+  - S1: `.env.example` — documents credential pattern for new devs
+  - S2: Edge function `ai-chat-167c2bc1450e` — model allowlist (7 IDs), MAX_MESSAGES=50, MAX_MESSAGE_LENGTH=10000, MAX_SYSTEM_LENGTH=5000, MAX_SEARCH_QUERY_LENGTH=500, security headers (X-Content-Type-Options/X-Frame-Options/X-XSS-Protection/Referrer-Policy), `errorResponse()` helper
+  - S3: `MarkdownRenderer.tsx` — DOMPurify FORBID_TAGS, FORBID_ATTR (all event handlers), ALLOWED_URI_REGEXP (http/https/mailto only), FORCE_BODY
+  - S3: `DocumentPanel.tsx` — URL validation (must start http:// or https://, uses `new URL()` parse + scheme check)
+  - S4: `SearchBar.tsx` — char counter when >80% of limit, red destructive at limit, submit blocked
+- `c9d4c95` Accessibility fix: suppress `aria-describedby` warnings in 3 dialog components
+  - `command.tsx` CommandDialog's DialogContent
+  - `DocumentPanel.tsx` SheetContent (has SheetTitle but no SheetDescription)
+  - `sidebar.tsx` mobile sidebar SheetContent
+  - Pattern: `aria-describedby={undefined}` (Radix UI recommended)
+- Full test verified: lint 0 errors, build clean, web search 200 OK, locale passed, no Bearer undefined
+
 ### Phase 4: Web Search Deep Fix & UX Optimization (11:50-12:30)
 - `dbe4049` Rebuild web search with 3-layer strategy (SearXNG → DDG HTML → DDG Lite)
   - Root cause: DuckDuckGo HTML returns empty in Deno runtime (bot detection)
@@ -99,6 +117,7 @@ Full-day session with 20+ user requests spanning repository management, bug fixe
 | 12 | App.tsx router recreation | `createBrowserRouter` inside component | Moved to module scope | 86d994a |
 | 13 | Web search empty results | DuckDuckGo HTML blocked in Deno runtime | SearXNG JSON API as primary strategy | dbe4049 |
 | 14 | AI says "can't search" | No prompt telling AI it HAS results | Explicit system prompt instruction | dbe4049 |
+| 15 | `aria-describedby` warning | Radix UI requires description or explicit `aria-describedby={undefined}` for all Dialog/Sheet | Added `aria-describedby={undefined}` to CommandDialog, DocumentPanel SheetContent, sidebar mobile SheetContent | c9d4c95 |
 
 ## Critical Lessons
 
@@ -124,26 +143,47 @@ The client does NOT expose `supabaseUrl` or `supabaseAnonKey` as reliable public
 - `createBrowserRouter(routes)` must be defined at MODULE scope, not inside a component
 - Defining inside component causes full remount on every state change
 
+### Security Hardening Pattern
+- Centralize all runtime constants in `src/config.ts`; never duplicate URL/key across files
+- Supabase anon key is **intentionally public** (by Supabase design); security is enforced by RLS
+- DOMPurify needs both FORBID_TAGS + FORBID_ATTR + ALLOWED_URI_REGEXP for real XSS protection
+- Edge function input validation: always validate message count, length, model allowlist
+- Security response headers go on **every** non-OPTIONS response (not just error responses)
+- `errorResponse()` helper pattern: centralize JSON 4xx response construction
+
+### Radix UI Accessibility
+- Every Dialog/Sheet/AlertDialog content needs either:
+  - A visible `<Description>` component, OR
+  - `aria-describedby={undefined}` on the content component to suppress warning
+- `AlertDialogContent` with `AlertDialogDescription` is correct ✅
+- `SheetContent` without `SheetDescription` needs `aria-describedby={undefined}`
+- `CommandDialog`'s inner `DialogContent` needs `aria-describedby={undefined}`
+
 ## File Inventory (key files)
 
 | File | Purpose | Last Modified |
 |------|---------|---------------|
 | src/index.css | Unified warm theme tokens + 7 custom CSS systems | 80d154d |
+| src/config.ts | **NEW** — Runtime constants hub: URL, anon key, endpoints, limits | 1d6bd2f |
 | src/lib/theme.ts | Theme utility (getStoredTheme, applyTheme, initTheme) | ce8682c |
-| src/pages/Index.tsx | Hero card + chat view + scroll/cancel/regenerate | ce8682c |
-| src/pages/CultivationPage.tsx | 5 views: home/checkin/result/records/tutorial | 86d994a |
+| src/pages/Index.tsx | Hero card + chat view + scroll/cancel/regenerate | 1d6bd2f |
+| src/pages/CultivationPage.tsx | 5 views: home/checkin/result/records/tutorial | 1d6bd2f |
 | src/App.tsx | Router + providers (router now module-scoped) | 86d994a |
-| src/components/MarkdownRenderer.tsx | marked + hljs + DOMPurify | aed65f2 |
-| src/components/SearchBar.tsx | Auto-resize textarea + stop button + toolbar | ce8682c |
+| src/components/MarkdownRenderer.tsx | marked + hljs + DOMPurify (with security FORBID rules) | 1d6bd2f |
+| src/components/SearchBar.tsx | Auto-resize textarea + stop button + char limit counter | 1d6bd2f |
+| src/components/DocumentPanel.tsx | Doc collections + URL validation + aria fix | c9d4c95 |
 | src/components/SuggestedPrompts.tsx | 4 category tags (filter) + 8 questions (2 per category) | ce8682c |
 | src/components/NavigationSidebar.tsx | Sidebar nav + ThemeToggle | ce8682c |
 | src/components/ChatMessage.tsx | Copy + Regenerate + Search progress + Source cards | ce8682c |
 | src/components/ThemeToggle.tsx | Dark/Light mode toggle (localStorage) | ce8682c |
-| src/hooks/useAIChat.ts | SSE streaming + cancel + FatalError + timeout | 5cd2c33 |
+| src/components/ui/command.tsx | CommandDialog — aria-describedby fix | c9d4c95 |
+| src/components/ui/sidebar.tsx | Mobile sidebar SheetContent — aria-describedby fix | c9d4c95 |
+| src/hooks/useAIChat.ts | SSE streaming + cancel + FatalError + timeout (no params) | 1d6bd2f |
 | src/hooks/useCultivation.ts | localStorage state management | 585c591 |
-| src/i18n/locales/zh-CN.json | Dao-themed Chinese translations (4 categories x 2 questions) | ce8682c |
-| src/i18n/locales/en-US.json | Dao-themed English translations (4 categories x 2 questions) | ce8682c |
-| supabase/functions/ai-chat-*/index.ts | AI chat + 3-layer web search + locale | dbe4049 |
+| src/i18n/locales/zh-CN.json | Dao-themed Chinese translations | ce8682c |
+| src/i18n/locales/en-US.json | Dao-themed English translations | ce8682c |
+| supabase/functions/ai-chat-*/index.ts | AI chat + web search + locale + security validation | 1d6bd2f |
+| .env.example | **NEW** — Documents credential pattern | 1d6bd2f |
 
 ## CSS Class Systems in index.css
 
@@ -157,8 +197,9 @@ The client does NOT expose `supabaseUrl` or `supabaseAnonKey` as reliable public
 
 ## Known Limitations
 - Preview cache can be 2-5 minutes behind code changes
-- Bundle size ~1277KB (highlight.js is largest contributor, could lazy-load)
+- Bundle size ~1295KB (highlight.js is largest contributor, could lazy-load)
 - Cultivation data is localStorage only (no cloud sync)
 - Web search SearXNG instances may be intermittently unavailable (4 instances provide redundancy)
 - Dark mode applies globally but some custom CSS class colors may need dark: variants review
 - LanguageSwitcher dropdown label "Language" is hardcoded English (minor)
+- Web search timeout is 60s (SearXNG 4 × 6s + DDG fallbacks); slow on all-fail scenarios
