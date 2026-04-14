@@ -165,7 +165,7 @@ export default function CultivationPage() {
     } catch (error) {
       console.error("AI guidance failed:", error);
       const fallbackGuidance = isZh
-        ? "道可道，非常道。心若止水，万物自明。量子纠缠，亦如因果轮回。持之以恒，终见本源。"
+        ? "道可道，非恒道。心若止水，万物自明。量子纠缠，亦如因果轮回。持之以恒，终见本源。"
         : "The Dao that can be told is not the eternal Dao. A still mind reflects all. Quantum entanglement mirrors karmic cycles. Persist, and you shall see the source.";
       const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallbackGuidance);
       setEarnedPoints(points);
