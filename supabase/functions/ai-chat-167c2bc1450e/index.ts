@@ -1,3 +1,4 @@
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -5,48 +6,189 @@ const corsHeaders = {
 
 const AI_API_URL = "https://api.enter.pro/code/api/v1/ai/messages";
 
-async function webSearch(query: string): Promise<{ title: string; url: string; snippet: string }[]> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    const resp = await fetch(
-      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; DaoResearchBot/1.0)",
-        },
-        signal: controller.signal,
-      }
-    );
-    clearTimeout(timeout);
-
-    const html = await resp.text();
-    const results: { title: string; url: string; snippet: string }[] = [];
-
-    const resultBlocks = html.split('class="result__body"');
-    for (let i = 1; i < Math.min(resultBlocks.length, 6); i++) {
-      const block = resultBlocks[i];
-      const titleMatch = block.match(/class="result__a"[^>]*>([^<]+)</);
-      const title = titleMatch ? titleMatch[1].replace(/&#x27;/g, "'").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim() : "";
-      const urlMatch = block.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^&"]+)/);
-      const url = urlMatch ? decodeURIComponent(urlMatch[1]) : "";
-      const snippetMatch = block.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
-      let snippet = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/&quot;/g, '"').trim() : "";
-      snippet = snippet.substring(0, 300);
-      if (title && url) {
-        results.push({ title, url, snippet });
-      }
-    }
-    console.log(`[web-search] query="${query}" results=${results.length}`);
-    return results;
-  } catch (err) {
-    console.error("[web-search] failed:", err);
-    return [];
-  }
+interface SearchResult {
+  title: string;
+  url: string;
+  snippet: string;
 }
 
-function buildSearchContext(results: { title: string; url: string; snippet: string }[]): string {
+// Multiple search strategies for reliability
+async function webSearch(query: string): Promise<SearchResult[]> {
+  // Strategy 1: SearXNG public instances (JSON API)
+  const searxInstances = [
+    "https://search.sapti.me",
+    "https://searx.tiekoetter.com",
+    "https://search.bus-hit.me",
+    "https://searx.be",
+  ];
+
+  for (const instance of searxInstances) {
+    try {
+      const results = await searxSearch(instance, query);
+      if (results.length > 0) {
+        console.log(`[web-search] searx=${instance} query="${query}" results=${results.length}`);
+        return results;
+      }
+    } catch (err) {
+      console.warn(`[web-search] searx ${instance} failed:`, err.message);
+    }
+  }
+
+  // Strategy 2: DuckDuckGo HTML fallback
+  try {
+    const results = await duckduckgoSearch(query);
+    if (results.length > 0) {
+      console.log(`[web-search] ddg query="${query}" results=${results.length}`);
+      return results;
+    }
+  } catch (err) {
+    console.warn("[web-search] ddg failed:", err.message);
+  }
+
+  // Strategy 3: DuckDuckGo Lite
+  try {
+    const results = await duckduckgoLiteSearch(query);
+    if (results.length > 0) {
+      console.log(`[web-search] ddg-lite query="${query}" results=${results.length}`);
+      return results;
+    }
+  } catch (err) {
+    console.warn("[web-search] ddg-lite failed:", err.message);
+  }
+
+  console.error(`[web-search] ALL strategies failed for query="${query}"`);
+  return [];
+}
+
+async function searxSearch(instance: string, query: string): Promise<SearchResult[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+
+  const url = `${instance}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=auto`;
+  const resp = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    signal: controller.signal,
+  });
+  clearTimeout(timeout);
+
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+  const data = await resp.json();
+  const results: SearchResult[] = [];
+
+  if (data.results && Array.isArray(data.results)) {
+    for (const r of data.results.slice(0, 5)) {
+      if (r.title && r.url) {
+        results.push({
+          title: r.title,
+          url: r.url,
+          snippet: (r.content || "").substring(0, 300),
+        });
+      }
+    }
+  }
+  return results;
+}
+
+async function duckduckgoSearch(query: string): Promise<SearchResult[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  const resp = await fetch(
+    `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8",
+      },
+      signal: controller.signal,
+    }
+  );
+  clearTimeout(timeout);
+
+  const html = await resp.text();
+  const results: SearchResult[] = [];
+
+  const resultBlocks = html.split('class="result__body"');
+  for (let i = 1; i < Math.min(resultBlocks.length, 6); i++) {
+    const block = resultBlocks[i];
+    const titleMatch = block.match(/class="result__a"[^>]*>([^<]+)</);
+    const title = titleMatch ? decodeHTMLEntities(titleMatch[1]).trim() : "";
+    const urlMatch = block.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^&"]+)/);
+    const url = urlMatch ? decodeURIComponent(urlMatch[1]) : "";
+    const snippetMatch = block.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+    let snippet = snippetMatch ? decodeHTMLEntities(snippetMatch[1].replace(/<[^>]+>/g, "")).trim() : "";
+    snippet = snippet.substring(0, 300);
+    if (title && url) {
+      results.push({ title, url, snippet });
+    }
+  }
+  return results;
+}
+
+async function duckduckgoLiteSearch(query: string): Promise<SearchResult[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  const resp = await fetch(
+    `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}`,
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html",
+      },
+      signal: controller.signal,
+    }
+  );
+  clearTimeout(timeout);
+
+  const html = await resp.text();
+  const results: SearchResult[] = [];
+
+  // DDG Lite format: <a rel="nofollow" href="URL" class='result-link'>Title</a>
+  // then <td class="result-snippet">Snippet</td>
+  const linkRegex = /class='result-link'[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const snippetRegex = /class="result-snippet">([^<]*)/g;
+
+  const links: { url: string; title: string }[] = [];
+  let m;
+  while ((m = linkRegex.exec(html)) !== null) {
+    links.push({ url: m[1], title: decodeHTMLEntities(m[2]).trim() });
+  }
+
+  const snippets: string[] = [];
+  while ((m = snippetRegex.exec(html)) !== null) {
+    snippets.push(decodeHTMLEntities(m[1]).trim().substring(0, 300));
+  }
+
+  for (let i = 0; i < Math.min(links.length, 5); i++) {
+    if (links[i].title && links[i].url) {
+      results.push({
+        title: links[i].title,
+        url: links[i].url,
+        snippet: snippets[i] || "",
+      });
+    }
+  }
+  return results;
+}
+
+function decodeHTMLEntities(str: string): string {
+  return str
+    .replace(/&#x27;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
+function buildSearchContext(results: SearchResult[]): string {
   if (results.length === 0) return "";
   let ctx = "## Web Search Results\n\n";
   for (const r of results) {
@@ -91,7 +233,7 @@ Deno.serve(async (req) => {
       parts.push(langInstruction);
     }
 
-    let searchResults: { title: string; url: string; snippet: string }[] = [];
+    let searchResults: SearchResult[] = [];
 
     if (enable_web_search) {
       const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
@@ -100,7 +242,10 @@ Deno.serve(async (req) => {
         const searchCtx = buildSearchContext(searchResults);
         if (searchCtx) {
           parts.push(searchCtx);
-          parts.push("Use the web search results above to provide up-to-date information. Cite sources when relevant.");
+          parts.push("IMPORTANT: You have access to the web search results above. Use them to provide accurate, up-to-date information. Always cite your sources by mentioning the source URL. Do NOT say you cannot access the internet or search the web — you already have the search results.");
+        } else {
+          // Search was attempted but returned no results
+          parts.push("Note: A web search was attempted for the user's query but returned no results. Please answer based on your knowledge and let the user know the search returned no results.");
         }
       }
     }
@@ -117,6 +262,8 @@ Deno.serve(async (req) => {
     if (finalSystem) {
       body.system = finalSystem;
     }
+
+    console.log(`[ai-chat] model=${body.model} web_search=${!!enable_web_search} search_results=${searchResults.length} system_len=${finalSystem.length}`);
 
     const response = await fetch(AI_API_URL, {
       method: "POST",
