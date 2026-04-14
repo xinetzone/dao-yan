@@ -54,7 +54,7 @@ export default function Index() {
     <div className="flex flex-col h-full w-full bg-background">
       {!hasStartedChat ? (
         <div className="flex flex-col items-center justify-center min-h-full px-6 py-12">
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 sm:gap-2">
+          <div className="absolute top-16 right-4 sm:top-6 sm:right-6 flex items-center gap-1.5 sm:gap-2 z-50">
             <button
               onClick={() => navigate("/cultivate")}
               className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all border border-border/40 hover:border-border shadow-sm hover:shadow"
