@@ -27,10 +27,10 @@ if [ -z "$1" ]; then
 fi
 
 TOKEN=$1
-GITHUB_URL="https://${TOKEN}@github.com/daoApps/dao-research-assistant.git"
+GITHUB_URL="https://${TOKEN}@github.com/xinetzone/dao-research-assistant.git"
 
 echo "📋 推送信息："
-echo "  目标仓库: daoApps/dao-research-assistant"
+echo "  目标仓库: xinetzone/dao-research-assistant"
 echo "  本地提交数: $(git rev-list --count HEAD)"
 echo "  标签: $(git tag -l)"
 echo ""
@@ -56,7 +56,7 @@ echo ""
 echo "🎉 推送完成！"
 echo ""
 echo "🌐 访问你的仓库："
-echo "   https://github.com/daoApps/dao-research-assistant"
+   https://github.com/xinetzone/dao-research-assistant"
 echo ""
 echo "📋 下一步："
 echo "   1. 访问仓库页面验证内容"

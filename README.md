@@ -83,7 +83,7 @@
 
 1. **克隆仓库**
 ```bash
-git clone https://github.com/daoApps/dao-research-assistant.git
+git clone https://github.com/xinetzone/dao-research-assistant.git
 cd dao-research-assistant
 ```
 
@@ -438,8 +438,8 @@ pnpm build:prod
 
 ## 📮 联系方式
 
-- GitHub Issues: [提交问题](https://github.com/daoApps/dao-research-assistant/issues)
-- GitHub Discussions: [参与讨论](https://github.com/daoApps/dao-research-assistant/discussions)
+- GitHub Issues: [提交问题](https://github.com/xinetzone/dao-research-assistant/issues)
+- GitHub Discussions: [参与讨论](https://github.com/xinetzone/dao-research-assistant/discussions)
 
 ---
 
