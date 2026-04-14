@@ -43,27 +43,23 @@
   "prompts": {
     "creative": {
       "title": "Original Text",
-      "text": "How to interpret the Silk Text opening: 'The Way that can be told is not the eternal Way'?"
+      "text": "How to interpret the Silk Text opening: 'The Way that can be told is not the eternal Way'?",
+      "text2": "What state is described by 'For learning, gain daily; for the Dao, lose daily'?"
     },
     "market": {
       "title": "Versions",
-      "text": "How does the Mawangdui Silk Text differ from the received version?"
+      "text": "How does the Mawangdui Silk Text differ from the received version?",
+      "text2": "What are the core differences between the Guodian bamboo slips and Mawangdui silk text?"
     },
     "research": {
       "title": "Philosophy",
-      "text": "What does 'Superior virtue is not virtuous, thus it has virtue' mean?"
+      "text": "What does 'Superior virtue is not virtuous, thus it has virtue' mean?",
+      "text2": "Compare Daoist Wu Wei with Buddhist Emptiness"
     },
     "coding": {
       "title": "Application",
-      "text": "How to apply Wu Wei (non-action) to modern life?"
-    },
-    "problem": {
-      "title": "Buddhist-Daoist",
-      "text": "Compare Daoist Wu Wei with Buddhist Emptiness"
-    },
-    "tech": {
-      "title": "Quantum View",
-      "text": "Interpret 'Dao gives birth to One' from quantum field theory"
+      "text": "How to apply Wu Wei (non-action) to modern life?",
+      "text2": "Interpret 'Dao gives birth to One, One to Two' from quantum field theory"
     }
   },
   "errors": {

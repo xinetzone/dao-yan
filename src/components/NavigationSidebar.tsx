@@ -4,6 +4,7 @@ import { Flame, FolderOpen, Globe, RotateCcw, X, BookOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 import { useCultivation } from "@/hooks/useCultivation";
 import { cn } from "@/lib/utils";
 
@@ -138,7 +139,8 @@ export function NavigationSidebar({
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-1">
+          <ThemeToggle />
           <LanguageSwitcher />
         </div>
       </aside>

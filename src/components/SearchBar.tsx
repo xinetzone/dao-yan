@@ -1,10 +1,11 @@
-import { useState, KeyboardEvent } from "react";
-import { Send, Loader2, Globe, FolderOpen } from "lucide-react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { Send, Loader2, Globe, FolderOpen, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
   onSubmit: (query: string) => void;
+  onCancel?: () => void;
   isLoading?: boolean;
   placeholder: string;
   variant?: "landing" | "chat";
@@ -16,6 +17,7 @@ interface SearchBarProps {
 
 export function SearchBar({
   onSubmit,
+  onCancel,
   isLoading,
   placeholder,
   variant = "landing",
@@ -27,11 +29,30 @@ export function SearchBar({
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === "zh-CN";
   const [query, setQuery] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const lineHeight = 24;
+    const minRows = variant === "landing" ? 3 : 1;
+    const maxRows = 6;
+    const minHeight = lineHeight * minRows;
+    const maxHeight = lineHeight * maxRows;
+    const newHeight = Math.min(Math.max(el.scrollHeight, minHeight), maxHeight);
+    el.style.height = `${newHeight}px`;
+  }, [query, variant]);
 
   const handleSubmit = () => {
     if (query.trim() && !isLoading) {
       onSubmit(query.trim());
       setQuery("");
+      // Reset height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
     }
   };
 
@@ -48,16 +69,17 @@ export function SearchBar({
       variant === "landing"
         ? "bg-card border-2 border-foreground/15 rounded-md p-1 shadow-sm"
         : "border-2 border-foreground/20 rounded bg-card p-1",
-      isLoading && "opacity-60"
     )}>
       <textarea
+        ref={textareaRef}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={isLoading}
         rows={variant === "landing" ? 3 : 1}
-        className="w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed px-4 py-3 text-base"
+        className="w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed px-4 py-3 text-base overflow-y-auto"
+        style={{ minHeight: variant === "landing" ? "72px" : "24px" }}
       />
 
       {/* Toolbar */}
@@ -67,11 +89,13 @@ export function SearchBar({
             <button
               type="button"
               onClick={onWebSearchToggle}
+              disabled={isLoading}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all border",
                 webSearchEnabled
                   ? "bg-primary/10 text-primary border-primary/30"
-                  : "text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+                  : "text-muted-foreground hover:text-foreground border-transparent hover:border-border",
+                isLoading && "opacity-50 cursor-not-allowed"
               )}
             >
               <Globe className="h-3.5 w-3.5" />
@@ -88,11 +112,13 @@ export function SearchBar({
             <button
               type="button"
               onClick={onDocPanelOpen}
+              disabled={isLoading}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all border",
                 activeCollectionId
                   ? "bg-primary/10 text-primary border-primary/30"
-                  : "text-muted-foreground hover:text-foreground border-transparent hover:border-border"
+                  : "text-muted-foreground hover:text-foreground border-transparent hover:border-border",
+                isLoading && "opacity-50 cursor-not-allowed"
               )}
             >
               <FolderOpen className="h-3.5 w-3.5" />
@@ -104,22 +130,33 @@ export function SearchBar({
           )}
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={!query.trim() || isLoading}
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded transition-all",
-            query.trim() && !isLoading
-              ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
-          )}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </button>
+        {/* Send / Stop button */}
+        {isLoading && onCancel ? (
+          <button
+            onClick={onCancel}
+            className="flex h-9 w-9 items-center justify-center rounded bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all active:scale-95"
+            title={isZh ? "停止生成" : "Stop generating"}
+          >
+            <Square className="h-4 w-4 fill-current" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={!query.trim() || isLoading}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded transition-all",
+              query.trim() && !isLoading
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

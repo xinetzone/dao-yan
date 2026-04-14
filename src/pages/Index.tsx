@@ -7,9 +7,13 @@ import { NavigationSidebar } from "@/components/NavigationSidebar";
 import { DocumentPanel } from "@/components/DocumentPanel";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useDocumentCollections } from "@/hooks/useDocumentCollections";
-import { BookOpen, AlertCircle, CheckCircle2, Globe, Menu } from "lucide-react";
+import { BookOpen, AlertCircle, CheckCircle2, Globe, Menu, ChevronDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { initTheme } from "@/lib/theme";
+
+// Apply saved theme on first load
+initTheme();
 
 const SUPABASE_URL = "https://spb-t4nnhrh7ch7j2940.supabase.opentrust.net";
 const SUPABASE_ANON_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiIsInJlZiI6InNwYi10NG5uaHJoN2NoN2oyOTQwIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzYwNzQ1MjMsImV4cCI6MjA5MTY1MDUyM30.5GFdUIA3rHOUoCI99ocBzBxDZjjQxOHRV-T6CKiHzCQ";
@@ -17,22 +21,42 @@ const SUPABASE_ANON_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5v
 export default function Index() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === "zh-CN";
-  const { messages, isLoading, error, sendMessage, clearMessages } = useAIChat(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { messages, isLoading, error, sendMessage, cancel, clearMessages } = useAIChat(SUPABASE_URL, SUPABASE_ANON_KEY);
   const { collections, getCollectionContext } = useDocumentCollections();
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [docPanelOpen, setDocPanelOpen] = useState(false);
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, []);
 
+  // Auto-scroll on new messages if near bottom
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    if (distanceFromBottom < 200) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
+
+  // Show/hide scroll-to-bottom button
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      setShowScrollBtn(distanceFromBottom > 300);
+    };
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [hasStartedChat]);
 
   const activeCollectionName = collections.find(c => c.id === activeCollectionId)?.name;
 
@@ -54,6 +78,15 @@ export default function Index() {
     setActiveCollectionId(id);
     setDocPanelOpen(false);
   };
+
+  // Regenerate: resend the last user message
+  const handleRegenerate = useCallback(() => {
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
+    if (lastUserMsg && !isLoading) {
+      // Remove last two messages (user + assistant) and re-send
+      handleSubmit(lastUserMsg.content);
+    }
+  }, [messages, isLoading, handleSubmit]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -129,7 +162,7 @@ export default function Index() {
                 )}
               </div>
 
-              {/* Feature Tags & Questions - Between hero and search */}
+              {/* Feature Tags & Questions */}
               <SuggestedPrompts onSelect={handleSubmit} />
 
               {/* Search Bar */}
@@ -180,7 +213,7 @@ export default function Index() {
             </header>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto relative" ref={messagesContainerRef}>
               <div className="max-w-4xl mx-auto px-4 sm:px-0">
                 {error && (
                   <div className="px-2 sm:px-6 py-4">
@@ -190,11 +223,31 @@ export default function Index() {
                     </Alert>
                   </div>
                 )}
-                {messages.map((message, index) => (
-                  <ChatMessage key={index} message={message} />
-                ))}
+                {messages.map((message, index) => {
+                  const isLastMsg = index === messages.length - 1;
+                  return (
+                    <ChatMessage
+                      key={index}
+                      message={message}
+                      isLast={isLastMsg}
+                      webSearchEnabled={webSearchEnabled}
+                      onRegenerate={isLastMsg ? handleRegenerate : undefined}
+                    />
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Scroll to bottom button */}
+              {showScrollBtn && (
+                <button
+                  onClick={() => scrollToBottom()}
+                  className="fixed bottom-28 right-6 sm:right-8 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-background border-2 border-foreground/15 shadow-md hover:bg-muted transition-all animate-in fade-in duration-200"
+                  title={isZh ? "回到底部" : "Scroll to bottom"}
+                >
+                  <ChevronDown className="h-4 w-4 text-foreground/70" />
+                </button>
+              )}
             </div>
 
             {/* Chat Input */}
@@ -202,6 +255,7 @@ export default function Index() {
               <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 pb-safe">
                 <SearchBar
                   onSubmit={handleSubmit}
+                  onCancel={cancel}
                   isLoading={isLoading}
                   placeholder={t("chat.searchPlaceholder")}
                   variant="chat"
