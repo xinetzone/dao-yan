@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import i18n from "@/i18n/config";
+import { AI_CHAT_ENDPOINT, SUPABASE_ANON_KEY } from "@/config";
 
 export interface SearchResult {
   title: string;
@@ -33,7 +34,7 @@ class FatalError extends Error {
   }
 }
 
-export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
+export function useAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,11 +67,11 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
     let receivedAnyData = false;
 
     try {
-      await fetchEventSource(`${supabaseUrl}/functions/v1/ai-chat-167c2bc1450e`, {
+      await fetchEventSource(AI_CHAT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseAnonKey}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages: [...messages, userMessage].map(m => ({
@@ -189,7 +190,7 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
       clearTimeout(timeoutId);
       setIsLoading(false);
     }
-  }, [messages, supabaseUrl, supabaseAnonKey]);
+  }, [messages]);
 
   const cancel = useCallback(() => {
     abortControllerRef.current?.abort();

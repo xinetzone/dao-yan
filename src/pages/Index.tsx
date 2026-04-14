@@ -15,13 +15,10 @@ import { initTheme } from "@/lib/theme";
 // Apply saved theme on first load
 initTheme();
 
-const SUPABASE_URL = "https://spb-t4nnhrh7ch7j2940.supabase.opentrust.net";
-const SUPABASE_ANON_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiIsInJlZiI6InNwYi10NG5uaHJoN2NoN2oyOTQwIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzYwNzQ1MjMsImV4cCI6MjA5MTY1MDUyM30.5GFdUIA3rHOUoCI99ocBzBxDZjjQxOHRV-T6CKiHzCQ";
-
 export default function Index() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === "zh-CN";
-  const { messages, isLoading, error, sendMessage, cancel, clearMessages } = useAIChat(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { messages, isLoading, error, sendMessage, cancel, clearMessages } = useAIChat();
   const { collections, getCollectionContext } = useDocumentCollections();
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [docPanelOpen, setDocPanelOpen] = useState(false);

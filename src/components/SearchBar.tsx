@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { Send, Loader2, Globe, FolderOpen, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { MAX_MESSAGE_LENGTH } from "@/config";
 
 interface SearchBarProps {
   onSubmit: (query: string) => void;
@@ -45,8 +46,10 @@ export function SearchBar({
     el.style.height = `${newHeight}px`;
   }, [query, variant]);
 
+  const isOverLimit = query.length > MAX_MESSAGE_LENGTH;
+
   const handleSubmit = () => {
-    if (query.trim() && !isLoading) {
+    if (query.trim() && !isLoading && !isOverLimit) {
       onSubmit(query.trim());
       setQuery("");
       // Reset height
@@ -130,6 +133,16 @@ export function SearchBar({
           )}
         </div>
 
+        {/* Character counter (shows when >80% of limit) */}
+        {query.length > MAX_MESSAGE_LENGTH * 0.8 && (
+          <span className={cn(
+            "text-[11px] tabular-nums mr-2 transition-colors",
+            isOverLimit ? "text-destructive font-semibold" : "text-muted-foreground"
+          )}>
+            {query.length}/{MAX_MESSAGE_LENGTH}
+          </span>
+        )}
+
         {/* Send / Stop button */}
         {isLoading && onCancel ? (
           <button
@@ -142,10 +155,10 @@ export function SearchBar({
         ) : (
           <button
             onClick={handleSubmit}
-            disabled={!query.trim() || isLoading}
+            disabled={!query.trim() || isLoading || isOverLimit}
             className={cn(
               "flex h-9 w-9 items-center justify-center rounded transition-all",
-              query.trim() && !isLoading
+              query.trim() && !isLoading && !isOverLimit
                 ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             )}

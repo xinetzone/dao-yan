@@ -4,7 +4,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Security response headers added to every non-OPTIONS response
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
 const AI_API_URL = "https://api.enter.pro/code/api/v1/ai/messages";
+
+// Allowlist of permitted model identifiers
+const ALLOWED_MODELS = new Set([
+  "anthropic/claude-sonnet-4.5",
+  "anthropic/claude-haiku-4-5",
+  "anthropic/claude-opus-4-5",
+  "google/gemini-2.5-pro",
+  "google/gemini-2.0-flash",
+  "openai/gpt-4o",
+  "openai/gpt-4o-mini",
+]);
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.5";
+
+// Input limits
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_LENGTH = 10000;
+const MAX_SYSTEM_LENGTH = 5000;
+const MAX_SEARCH_QUERY_LENGTH = 500;
 
 interface SearchResult {
   title: string;
@@ -14,6 +40,9 @@ interface SearchResult {
 
 // Multiple search strategies for reliability
 async function webSearch(query: string): Promise<SearchResult[]> {
+  // Sanitize query
+  const safeQuery = query.substring(0, MAX_SEARCH_QUERY_LENGTH).trim();
+
   // Strategy 1: SearXNG public instances (JSON API)
   const searxInstances = [
     "https://search.sapti.me",
@@ -24,39 +53,39 @@ async function webSearch(query: string): Promise<SearchResult[]> {
 
   for (const instance of searxInstances) {
     try {
-      const results = await searxSearch(instance, query);
+      const results = await searxSearch(instance, safeQuery);
       if (results.length > 0) {
-        console.log(`[web-search] searx=${instance} query="${query}" results=${results.length}`);
+        console.log(`[web-search] searx=${instance} query="${safeQuery}" results=${results.length}`);
         return results;
       }
     } catch (err) {
-      console.warn(`[web-search] searx ${instance} failed:`, err.message);
+      console.warn(`[web-search] searx ${instance} failed:`, (err as Error).message);
     }
   }
 
   // Strategy 2: DuckDuckGo HTML fallback
   try {
-    const results = await duckduckgoSearch(query);
+    const results = await duckduckgoSearch(safeQuery);
     if (results.length > 0) {
-      console.log(`[web-search] ddg query="${query}" results=${results.length}`);
+      console.log(`[web-search] ddg query="${safeQuery}" results=${results.length}`);
       return results;
     }
   } catch (err) {
-    console.warn("[web-search] ddg failed:", err.message);
+    console.warn("[web-search] ddg failed:", (err as Error).message);
   }
 
   // Strategy 3: DuckDuckGo Lite
   try {
-    const results = await duckduckgoLiteSearch(query);
+    const results = await duckduckgoLiteSearch(safeQuery);
     if (results.length > 0) {
-      console.log(`[web-search] ddg-lite query="${query}" results=${results.length}`);
+      console.log(`[web-search] ddg-lite query="${safeQuery}" results=${results.length}`);
       return results;
     }
   } catch (err) {
-    console.warn("[web-search] ddg-lite failed:", err.message);
+    console.warn("[web-search] ddg-lite failed:", (err as Error).message);
   }
 
-  console.error(`[web-search] ALL strategies failed for query="${query}"`);
+  console.error(`[web-search] ALL strategies failed for query="${safeQuery}"`);
   return [];
 }
 
@@ -149,8 +178,6 @@ async function duckduckgoLiteSearch(query: string): Promise<SearchResult[]> {
   const html = await resp.text();
   const results: SearchResult[] = [];
 
-  // DDG Lite format: <a rel="nofollow" href="URL" class='result-link'>Title</a>
-  // then <td class="result-snippet">Snippet</td>
   const linkRegex = /class='result-link'[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
   const snippetRegex = /class="result-snippet">([^<]*)/g;
 
@@ -208,9 +235,20 @@ function getLanguageInstruction(locale?: string): string {
   return `You MUST respond in the language matching locale: ${locale}.`;
 }
 
+function errorResponse(message: string, status: number): Response {
+  const errorSSE = `event: error\ndata: ${JSON.stringify({
+    type: "error",
+    error: { type: "api_error", message },
+  })}\n\n`;
+  return new Response(errorSSE, {
+    status,
+    headers: { ...corsHeaders, ...securityHeaders, "Content-Type": "text/event-stream" },
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: { ...corsHeaders, ...securityHeaders } });
   }
 
   try {
@@ -219,24 +257,67 @@ Deno.serve(async (req) => {
       throw new Error("AI_API_TOKEN is not configured");
     }
 
-    const { messages, model, system, enable_web_search, locale } = await req.json();
+    // Parse and validate request body
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse("Invalid JSON body", 400);
+    }
+
+    const { messages, model, system, enable_web_search, locale } = body as {
+      messages: Array<{ role: string; content: string }>;
+      model?: string;
+      system?: string;
+      enable_web_search?: boolean;
+      locale?: string;
+    };
+
+    // Validate messages
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return errorResponse("messages must be a non-empty array", 400);
+    }
+    if (messages.length > MAX_MESSAGES) {
+      return errorResponse(`Too many messages (max ${MAX_MESSAGES})`, 400);
+    }
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return errorResponse("Each message must have role and content", 400);
+      }
+      if (!["user", "assistant", "system"].includes(msg.role)) {
+        return errorResponse(`Invalid message role: ${msg.role}`, 400);
+      }
+      if (typeof msg.content !== "string" || msg.content.length > MAX_MESSAGE_LENGTH) {
+        return errorResponse(`Message content exceeds max length of ${MAX_MESSAGE_LENGTH}`, 400);
+      }
+    }
+
+    // Validate and sanitize model
+    const safeModel = (typeof model === "string" && ALLOWED_MODELS.has(model))
+      ? model
+      : DEFAULT_MODEL;
+
+    // Validate system prompt length
+    if (system && typeof system === "string" && system.length > MAX_SYSTEM_LENGTH) {
+      return errorResponse(`System prompt exceeds max length of ${MAX_SYSTEM_LENGTH}`, 400);
+    }
 
     // Build system prompt: user-provided system + language instruction + search context
     const parts: string[] = [];
 
-    if (system) {
+    if (system && typeof system === "string") {
       parts.push(system);
     }
 
-    const langInstruction = getLanguageInstruction(locale);
+    const langInstruction = getLanguageInstruction(typeof locale === "string" ? locale : undefined);
     if (langInstruction) {
       parts.push(langInstruction);
     }
 
     let searchResults: SearchResult[] = [];
 
-    if (enable_web_search) {
-      const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
+    if (enable_web_search === true) {
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
       if (lastUserMsg) {
         searchResults = await webSearch(lastUserMsg.content);
         const searchCtx = buildSearchContext(searchResults);
@@ -244,7 +325,6 @@ Deno.serve(async (req) => {
           parts.push(searchCtx);
           parts.push("IMPORTANT: You have access to the web search results above. Use them to provide accurate, up-to-date information. Always cite your sources by mentioning the source URL. Do NOT say you cannot access the internet or search the web — you already have the search results.");
         } else {
-          // Search was attempted but returned no results
           parts.push("Note: A web search was attempted for the user's query but returned no results. Please answer based on your knowledge and let the user know the search returned no results.");
         }
       }
@@ -252,18 +332,18 @@ Deno.serve(async (req) => {
 
     const finalSystem = parts.join("\n\n");
 
-    const body: Record<string, unknown> = {
-      model: model || "anthropic/claude-sonnet-4.5",
+    const requestBody: Record<string, unknown> = {
+      model: safeModel,
       messages,
       stream: true,
       max_tokens: 4096,
     };
 
     if (finalSystem) {
-      body.system = finalSystem;
+      requestBody.system = finalSystem;
     }
 
-    console.log(`[ai-chat] model=${body.model} web_search=${!!enable_web_search} search_results=${searchResults.length} system_len=${finalSystem.length}`);
+    console.log(`[ai-chat] model=${safeModel} web_search=${!!enable_web_search} search_results=${searchResults.length} system_len=${finalSystem.length}`);
 
     const response = await fetch(AI_API_URL, {
       method: "POST",
@@ -271,7 +351,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${AI_API_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -292,9 +372,16 @@ Deno.serve(async (req) => {
       })}\n\n`;
       return new Response(errorSSE, {
         status: response.status,
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        headers: { ...corsHeaders, ...securityHeaders, "Content-Type": "text/event-stream" },
       });
     }
+
+    const responseHeaders = {
+      ...corsHeaders,
+      ...securityHeaders,
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+    };
 
     if (searchResults.length > 0) {
       const searchEvent = `event: search_results\ndata: ${JSON.stringify({
@@ -321,23 +408,12 @@ Deno.serve(async (req) => {
           }
         },
       });
-      return new Response(readable, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
-      });
+      return new Response(readable, { headers: responseHeaders });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
-    });
+    return new Response(response.body, { headers: responseHeaders });
   } catch (error) {
     console.error("[ai-chat] error:", error);
-    const errorSSE = `event: error\ndata: ${JSON.stringify({
-      type: "error",
-      error: { type: "api_error", message: error.message },
-    })}\n\n`;
-    return new Response(errorSSE, {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
+    return errorResponse((error as Error).message, 500);
   }
 });

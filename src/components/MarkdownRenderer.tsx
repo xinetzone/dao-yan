@@ -91,7 +91,7 @@ marked.setOptions({
   breaks: false,
 });
 
-// DOMPurify config
+// DOMPurify config — strict allowlist prevents XSS via injected HTML
 const PURIFY_CONFIG: DOMPurify.Config = {
   ALLOWED_TAGS: [
     "h1", "h2", "h3", "h4", "h5", "h6", "p", "br", "hr",
@@ -109,6 +109,18 @@ const PURIFY_CONFIG: DOMPurify.Config = {
     "xmlns", "viewBox", "fill", "stroke", "stroke-width",
     "stroke-linecap", "stroke-linejoin", "d", "x", "y", "rx", "ry",
   ],
+  // Explicitly forbid event handlers and dangerous tags
+  FORBID_ATTR: [
+    "onerror", "onload", "onclick", "onmouseover", "onfocus",
+    "onblur", "onkeydown", "onkeyup", "onkeypress",
+    "onchange", "oninput", "onsubmit", "onreset",
+    "style",            // prevents CSS injection
+  ],
+  FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form"],
+  // Only allow http/https URLs in href and src — blocks javascript: and data: URIs
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+  // Ensure sanitized HTML is wrapped safely
+  FORCE_BODY: true,
 };
 
 interface MarkdownRendererProps {

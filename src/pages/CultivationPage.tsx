@@ -11,9 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-
-const SUPABASE_URL = "https://spb-t4nnhrh7ch7j2940.supabase.opentrust.net";
-const SUPABASE_ANON_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiIsInJlZiI6InNwYi10NG5uaHJoN2NoN2oyOTQwIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzYwNzQ1MjMsImV4cCI6MjA5MTY1MDUyM30.5GFdUIA3rHOUoCI99ocBzBxDZjjQxOHRV-T6CKiHzCQ";
+import { AI_CHAT_ENDPOINT, SUPABASE_ANON_KEY } from "@/config";
 
 /** Fatal error to stop fetchEventSource auto-retry */
 class FatalError extends Error {
@@ -93,7 +91,7 @@ export default function CultivationPage() {
 
     try {
       let fullGuidance = "";
-      await fetchEventSource(`${SUPABASE_URL}/functions/v1/ai-chat-167c2bc1450e`, {
+      await fetchEventSource(AI_CHAT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
