@@ -1,14 +1,14 @@
 {
   "landing": {
-    "title": "我可以帮你研究什么？",
-    "subtitle": "提出任何问题，获取由 AI 驱动的详细、深入的研究答案",
-    "searchPlaceholder": "问我任何问题...",
-    "tryPrompts": "尝试这些提示"
+    "title": "道研助手",
+    "subtitle": "帛书版《道德经》AI 学者",
+    "searchPlaceholder": "向大师兄提问...",
+    "tryPrompts": "试试这些话题"
   },
   "chat": {
-    "header": "研究助手",
+    "header": "道研助手",
     "newChat": "新对话",
-    "searchPlaceholder": "提出后续问题...",
+    "searchPlaceholder": "继续提问...",
     "thinking": "思考中...",
     "thinkingProcess": "思考过程",
     "docs": "文档"
@@ -42,28 +42,28 @@
   },
   "prompts": {
     "creative": {
-      "title": "创意写作",
-      "text": "帮我写一个关于人工智能的引人入胜的故事"
+      "title": "原文解读",
+      "text": "帛书版道经第一章「道，可道也，非恒道也」如何解读？"
     },
     "market": {
-      "title": "市场分析",
-      "text": "2026年人工智能技术的主要趋势是什么？"
+      "title": "版本对比",
+      "text": "帛书版与通行本有何不同？"
     },
     "research": {
-      "title": "学术研究",
-      "text": "用简单的术语解释量子计算"
+      "title": "思想阐发",
+      "text": "「上德不德，是以有德」是什么意思？"
     },
     "coding": {
-      "title": "编程帮助",
-      "text": "如何优化处理大型数据集的 React 性能？"
+      "title": "生活应用",
+      "text": "无为而治如何理解和应用到现代生活？"
     },
     "problem": {
-      "title": "问题解决",
-      "text": "学习新编程语言的最佳方法是什么？"
+      "title": "佛道对话",
+      "text": "道家的「无为」与佛家的「空」有何异同？"
     },
     "tech": {
-      "title": "科技话题",
-      "text": "人工智能的伦理影响是什么？"
+      "title": "量子视角",
+      "text": "从量子场论角度如何理解「道生一，一生二」？"
     }
   },
   "errors": {
@@ -77,7 +77,7 @@
   },
   "webSearch": {
     "title": "搜索网页",
-    "enableAutoSearch": "启用联网搜索",
+    "enableAutoSearch": "联网搜索已启用",
     "sources": "来源",
     "searching": "正在搜索网络..."
   },

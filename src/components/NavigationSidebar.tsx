@@ -52,8 +52,8 @@ export function NavigationSidebar({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-foreground to-primary text-background">
-              <Sparkles className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-accent border border-foreground/20">
+              <Sparkles className="h-4 w-4 text-foreground/70" />
             </div>
             <span className="font-semibold">{t("chat.header")}</span>
           </div>

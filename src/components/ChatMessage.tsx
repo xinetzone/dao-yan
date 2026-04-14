@@ -45,10 +45,6 @@ function SourceCard({ source }: { source: SearchResult }) {
   );
 }
 
-interface ChatMessageProps {
-  message: Message;
-}
-
 export function ChatMessage({ message }: ChatMessageProps) {
   const { t } = useTranslation();
   const [showThinking, setShowThinking] = useState(true);
@@ -70,7 +66,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg",
         message.role === "user" 
           ? "bg-primary text-primary-foreground" 
-          : "bg-gradient-to-br from-accent-foreground to-primary text-background"
+          : "bg-accent border border-foreground/20"
       )}>
         {message.role === "user" ? <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
       </div>

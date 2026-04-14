@@ -1,12 +1,12 @@
 {
   "landing": {
-    "title": "What can I help you research?",
-    "subtitle": "Ask me anything and get detailed, well-researched answers powered by AI",
-    "searchPlaceholder": "Ask anything...",
-    "tryPrompts": "Try these prompts"
+    "title": "Dao Research",
+    "subtitle": "Mawangdui Silk Text Dao De Jing AI Scholar",
+    "searchPlaceholder": "Ask the master...",
+    "tryPrompts": "Try these topics"
   },
   "chat": {
-    "header": "Research Assistant",
+    "header": "Dao Research",
     "newChat": "New Chat",
     "searchPlaceholder": "Ask a follow-up...",
     "thinking": "Thinking...",
@@ -42,28 +42,28 @@
   },
   "prompts": {
     "creative": {
-      "title": "Creative Writing",
-      "text": "Help me write a compelling story about artificial intelligence"
+      "title": "Original Text",
+      "text": "How to interpret the Silk Text opening: 'The Way that can be told is not the eternal Way'?"
     },
     "market": {
-      "title": "Market Analysis",
-      "text": "What are the key trends in AI technology for 2026?"
+      "title": "Versions",
+      "text": "How does the Mawangdui Silk Text differ from the received version?"
     },
     "research": {
-      "title": "Research",
-      "text": "Explain quantum computing in simple terms"
+      "title": "Philosophy",
+      "text": "What does 'Superior virtue is not virtuous, thus it has virtue' mean?"
     },
     "coding": {
-      "title": "Coding Help",
-      "text": "How do I optimize React performance with large datasets?"
+      "title": "Application",
+      "text": "How to apply Wu Wei (non-action) to modern life?"
     },
     "problem": {
-      "title": "Problem Solving",
-      "text": "What's the best approach to learn a new programming language?"
+      "title": "Buddhist-Daoist",
+      "text": "Compare Daoist Wu Wei with Buddhist Emptiness"
     },
     "tech": {
-      "title": "Technology",
-      "text": "What are the ethical implications of artificial intelligence?"
+      "title": "Quantum View",
+      "text": "Interpret 'Dao gives birth to One' from quantum field theory"
     }
   },
   "errors": {
@@ -77,7 +77,7 @@
   },
   "webSearch": {
     "title": "Web Search",
-    "enableAutoSearch": "Enable web search",
+    "enableAutoSearch": "Web search enabled",
     "sources": "Sources",
     "searching": "Searching the web..."
   },
