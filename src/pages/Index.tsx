@@ -117,7 +117,7 @@ export default function Index() {
             )}
 
             <div className="max-w-3xl mx-auto w-full">
-              <SearchBar onSubmit={handleSubmit} isLoading={isLoading} placeholder={t('landing.searchPlaceholder')} variant="landing" />
+              <SearchBar onSubmit={handleSubmit} isLoading={isLoading} placeholder={t('landing.searchPlaceholder')} variant="landing" webSearchEnabled={webSearchEnabled} onWebSearchToggle={() => setWebSearchEnabled(!webSearchEnabled)} />
             </div>
 
             <div className="space-y-4 sm:space-y-6">
@@ -180,7 +180,7 @@ export default function Index() {
 
           <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 pb-safe">
-              <SearchBar onSubmit={handleSubmit} isLoading={isLoading} placeholder={t('chat.searchPlaceholder')} variant="chat" />
+              <SearchBar onSubmit={handleSubmit} isLoading={isLoading} placeholder={t('chat.searchPlaceholder')} variant="chat" webSearchEnabled={webSearchEnabled} onWebSearchToggle={() => setWebSearchEnabled(!webSearchEnabled)} />
             </div>
           </div>
         </div>
