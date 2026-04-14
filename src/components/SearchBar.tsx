@@ -40,24 +40,24 @@ export function SearchBar({ onSubmit, isLoading, placeholder, variant = "landing
         disabled={isLoading}
         rows={variant === "landing" ? 1 : 1}
         className={cn(
-          "w-full resize-none bg-transparent px-6 py-4 pr-14 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed",
-          variant === "landing" ? "text-lg" : "text-base"
+          "w-full resize-none bg-transparent pr-12 sm:pr-14 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed",
+          variant === "landing" ? "px-4 py-3 sm:px-6 sm:py-4 text-base sm:text-lg" : "px-4 py-3 text-base"
         )}
       />
       <button
         onClick={handleSubmit}
         disabled={!query.trim() || isLoading}
         className={cn(
-          "absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
+          "absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg transition-all duration-200",
           query.trim() && !isLoading
-            ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-medium"
+            ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-medium active:scale-95"
             : "bg-muted text-muted-foreground cursor-not-allowed"
         )}
       >
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
         ) : (
-          <ArrowRight className="h-5 w-5" />
+          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
         )}
       </button>
     </div>

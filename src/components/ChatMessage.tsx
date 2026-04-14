@@ -22,27 +22,27 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      "flex w-full gap-4 px-6 py-8 transition-colors",
+      "flex w-full gap-3 sm:gap-4 px-4 sm:px-6 py-6 sm:py-8 transition-colors",
       message.role === "user" ? "bg-background" : "bg-muted/30"
     )}>
       <div className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+        "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg",
         message.role === "user" 
           ? "bg-primary text-primary-foreground" 
           : "bg-gradient-to-br from-accent-foreground to-primary text-background"
       )}>
-        {message.role === "user" ? <User className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+        {message.role === "user" ? <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
       </div>
 
-      <div className="flex-1 space-y-4 min-w-0">
+      <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
         {isWaitingForContent && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="flex gap-1">
-              <div className="h-2 w-2 rounded-full bg-current animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="h-2 w-2 rounded-full bg-current animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="h-2 w-2 rounded-full bg-current animate-bounce"></div>
+              <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-current animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-current animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-current animate-bounce"></div>
             </div>
-            <span className="text-sm">{t('chat.thinking')}</span>
+            <span className="text-xs sm:text-sm">{t('chat.thinking')}</span>
           </div>
         )}
 
@@ -57,7 +57,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             </button>
             
             {showThinking && (
-              <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground whitespace-pre-wrap border border-border/50 font-mono leading-relaxed">
+              <div className="p-3 sm:p-4 bg-muted/50 rounded-lg text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap border border-border/50 font-mono leading-relaxed overflow-x-auto">
                 {message.thinking}
                 {message.isStreaming && !message.content && (
                   <span className="inline-block w-1.5 h-4 bg-current animate-pulse ml-0.5" />
@@ -69,7 +69,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
         {message.content && (
           <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-a:text-accent-foreground prose-a:no-underline hover:prose-a:underline">
-            <div className="whitespace-pre-wrap leading-relaxed">
+            <div className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base break-words">
               {message.content}
               {message.isStreaming && (
                 <span className="inline-block w-1.5 h-4 bg-foreground/70 animate-pulse ml-0.5" />
