@@ -1,6 +1,6 @@
 # Session Memory -- 2026-04-14
 
-## Project: dao-research-assistant (xinetzone/dao-research-assistant)
+## Project: 道衍 (dao-yan / xinetzone/dao-yan)
 
 ## Session Summary
 Full-day session with 20+ user requests spanning repository management, bug fixes, UI redesign, Markdown rendering, documentation, web search fix, locale fix, comprehensive code review, and UX optimization.

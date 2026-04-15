@@ -16,8 +16,8 @@
 - 格式应该是：`https://github.com/xxx/xxx`
 
 **例如**：
-- ✅ `https://github.com/daoApps/dao-research-assistant`
-- ✅ `https://github.com/your-username/dao-research-assistant`
+- ✅ `https://github.com/daoApps/dao-yan`
+- ✅ `https://github.com/your-username/dao-yan`
 - ❌ `https://github.com/daoApps/other-name`
 
 ### 2. 组织权限检查
@@ -84,7 +84,7 @@
 
 ### 选项 1：确认仓库地址
 ```
-我的仓库地址是：https://github.com/xxx/dao-research-assistant
+我的仓库地址是：https://github.com/xxx/dao-yan
 ```
 
 ### 选项 2：使用个人账号

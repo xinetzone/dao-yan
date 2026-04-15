@@ -3,7 +3,7 @@
 ## 1. 执行概览
 | 项目 | 详情 |
 |------|------|
-| **任务** | 参考"道德大师兄"设计风格，全面改造 dao-research-assistant UI |
+| **任务** | 参考"道德大师兄"设计风格，全面改造 dao-yan UI |
 | **参考** | https://acntxq6xf8pe.aiforce.cloud/spark/faas/app_4jspztm260ymj |
 | **状态** | 首次改造已提交(ba51f4b)但被平台重置，需重新实施 |
 
@@ -32,8 +32,8 @@
 | src/components/SuggestedPrompts.tsx | 重写 | 功能标签 + 问题药丸 |
 | src/pages/Index.tsx | 重写 | 英雄卡片 + 修复3个bug |
 | src/components/ChatMessage.tsx | 修改 | 移除重复接口定义 |
-| src/i18n/locales/zh-CN.json | 修改 | 道研主题提示词 |
-| src/i18n/locales/en-US.json | 修改 | 道研主题提示词 |
+| src/i18n/locales/zh-CN.json | 修改 | 道衍提示词 |
+| src/i18n/locales/en-US.json | 修改 | 道衍提示词 |
 
 ## 5. 经验教训
 - 平台可能会自动重置代码，大改后应立即push到GitHub

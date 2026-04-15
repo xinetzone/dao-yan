@@ -1,7 +1,7 @@
 # Session Review -- 2026-04-14
 
 ## Overview
-This session focused on transforming the dao-research-assistant from a generic AI chat UI into a visually distinctive Chinese scholarly-themed application, with a polished cosmic cultivation system.
+This session focused on transforming the dao-yan from a generic AI chat UI into a visually distinctive Chinese scholarly-themed application, with a polished cosmic cultivation system.
 
 ## Changes Summary
 

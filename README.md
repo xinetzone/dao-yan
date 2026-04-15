@@ -1,4 +1,4 @@
-# 道研助手 (Dao Research Assistant)
+# 道衍 (Dao Yan)
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ## 项目简介
 
-道研助手是一个创新的 AI 研究对话应用，以帛书版《道德经》为根基，独特融合：
+道衍是一个创新的 AI 研究对话应用，以帛书版《道德经》为根基，独特融合：
 
 - **帛书版《道德经》** 的无为而治哲学
 - **佛家禅修** 的直心如如不动智慧
@@ -71,7 +71,7 @@
 ### 国际化
 - **中英文双语** — 完整界面翻译
 - **语言感知 AI 回复** — 自动将 locale 传递给 AI，回复语言跟随界面语言
-- **道研主题提示词** — 原文解读、版本对比、思想阐发、生活应用（每类 2 题）
+- **道衍提示词** — 原文解读、版本对比、思想阐发、生活应用（每类 2 题）
 - **自动检测** — 根据浏览器语言自动切换
 
 ---
@@ -121,7 +121,7 @@ dao-yan/
 │   │   ├── ChatMessage.tsx          # 消息组件（复制/重生成/来源卡片）
 │   │   ├── MarkdownRenderer.tsx     # marked 渲染器（高亮/复制/XSS）
 │   │   ├── SearchBar.tsx            # 搜索栏（自动伸缩/停止按钮/工具栏）
-│   │   ├── SuggestedPrompts.tsx     # 分类标签过滤 + 8 个道研问题
+│   │   ├── SuggestedPrompts.tsx     # 分类标签过滤 + 8 个道衍问题
 │   │   ├── ThemeToggle.tsx          # 深/浅色模式切换（侧边栏）
 │   │   ├── NavigationSidebar.tsx    # 左侧导航栏
 │   │   ├── DocumentPanel.tsx        # 文档管理面板
@@ -226,7 +226,7 @@ MIT License — 详见 [LICENSE](LICENSE)
 
 <a id="english"></a>
 
-# Dao Research Assistant
+# Dao Yan (道衍)
 
 **AI Scholar for the Mawangdui Silk Text Dao De Jing — Bridging ancient wisdom and modern AI**
 

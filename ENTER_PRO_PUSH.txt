@@ -20,7 +20,7 @@
 第 3 步：完成！
 --------------------------
 我会自动执行推送，然后你就可以访问：
-https://github.com/daoApps/dao-research-assistant
+https://github.com/daoApps/dao-yan
 
 ╔════════════════════════════════════════════════════════════╗
 ║  就这么简单！Enter.pro 让一切都在浏览器中完成！         ║
