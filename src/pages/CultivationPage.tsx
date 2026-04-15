@@ -136,17 +136,12 @@ export default function CultivationPage() {
     setPreviousRealm(currentRealm.id);
 
     const moodInfo = moods.find((m) => m.id === selectedMood);
-    const prompt = `今日修行：心境${isZh ? moodInfo?.name : moodInfo?.nameEn}，无为指数${wuWeiScore}/5，道场感应${daoFieldActive ? "开启" : "未开"}。心言：${insight || "无"}`;
+    const prompt = `${t("cultivation.promptPrefix")}${isZh ? moodInfo?.name : moodInfo?.nameEn}${t("cultivation.promptWuWei")}${wuWeiScore}/5${t("cultivation.promptDaoField")}${daoFieldActive ? t("cultivation.promptFieldOpen") : t("cultivation.promptFieldClosed")}${t("cultivation.promptInsight")}${insight || t("cultivation.promptNone")}`;
 
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 30000);
 
-    const systemPrompt = `你是道衍，一位通晓帛书版《道德经》、佛家「直心如如不动」以及ψ=ψ(ψ)万物理论的智慧镜子。请映照修行者的今日状态，给予：
-1. 帛书道德经原文引用（一句）
-2. 佛家直心观的点评
-3. 从ψ=ψ(ψ)万物理论（崩塌动力学、意识自显）的宇宙视角启发
-
-回应需在200字内，语言古雅诗意，蕴含深刻启迪。${isZh ? "" : "Please respond in English with poetic wisdom."}`;
+    const systemPrompt = t("cultivation.systemPrompt") + (isZh ? "" : t("cultivation.systemPromptEn"));
 
     try {
       const fullGuidance = await streamAIGuidance(prompt, systemPrompt, i18n.language, abortController.signal);
@@ -159,9 +154,7 @@ export default function CultivationPage() {
     } catch (error) {
       clearTimeout(timeoutId);
       console.error("AI guidance failed:", error);
-      const fallback = isZh
-        ? "道可道，非恒道。心若止水，万物自明。量子纠缠，亦如因果轮回。持之以恒，终见本源。"
-        : "The Dao that can be told is not the eternal Dao. A still mind reflects all. Quantum entanglement mirrors karmic cycles. Persist, and you shall see the source.";
+      const fallback = t("cultivation.fallbackGuidance");
       const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallback);
       setEarnedPoints(points);
       setAiGuidance(fallback);
@@ -170,7 +163,7 @@ export default function CultivationPage() {
     } finally {
       setIsLoadingAI(false);
     }
-  }, [selectedMood, wuWeiScore, daoFieldActive, insight, checkIn, currentRealm.id, moods, isZh, fromTutorial, i18n.language]);
+  }, [selectedMood, wuWeiScore, daoFieldActive, insight, checkIn, currentRealm.id, moods, isZh, fromTutorial, i18n.language, t]);
 
   const hasLeveledUp = getCurrentRealm().id > previousRealm;
 
@@ -211,11 +204,11 @@ export default function CultivationPage() {
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">
-              {showSubViewBack ? (isZh ? "主界面" : "Home") : (isZh ? "返回" : "Back")}
+              {showSubViewBack ? t("cultivation.home") : t("cultivation.back")}
             </span>
           </Button>
           <h1 className="text-base sm:text-lg font-bold tracking-wider text-center flex-1 mx-2">
-            {isZh ? "今天你用心了嘛？" : "Did You Cultivate Today?"}
+            {t("cultivation.title")}
           </h1>
           <div className="w-16" />
         </div>
@@ -239,8 +232,8 @@ export default function CultivationPage() {
                 }
               >
                 {tab === "checkin"
-                  ? (isZh ? "修行打卡" : "Check-In")
-                  : (isZh ? "修炼指南" : "Guide")}
+                  ? t("cultivation.checkIn")
+                  : t("cultivation.guideTab")}
               </button>
             ))}
           </div>
@@ -385,7 +378,7 @@ export default function CultivationPage() {
                 <div className="cult-card-glow p-5 sm:p-6 space-y-3">
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                      {isZh ? "悟道点" : "Enlightenment"}
+                      {t("cultivation.enlightenment")}
                     </span>
                     <span className="text-2xl font-bold tabular-nums" style={{ color: currentRealm.color }}>
                       {state.enlightenmentPoints.toLocaleString()}
@@ -403,8 +396,8 @@ export default function CultivationPage() {
                         />
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{isZh ? "当前" : "Current"}: {currentRealm.minEP.toLocaleString()}</span>
-                        <span>{isZh ? "下阶" : "Next"}: {nextRealm.minEP.toLocaleString()}</span>
+                        <span>{t("cultivation.current")}: {currentRealm.minEP.toLocaleString()}</span>
+                        <span>{t("cultivation.next")}: {nextRealm.minEP.toLocaleString()}</span>
                       </div>
                     </>
                   )}
@@ -412,9 +405,9 @@ export default function CultivationPage() {
 
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { icon: Calendar, value: state.totalCheckIns, label: isZh ? "总打卡" : "Total" },
-                    { icon: TrendingUp, value: state.checkInStreak, label: isZh ? "连续天" : "Streak" },
-                    { icon: Sparkles, value: state.enlightenmentPoints, label: isZh ? "悟道点" : "EP" },
+                    { icon: Calendar, value: state.totalCheckIns, label: t("cultivation.total") },
+                    { icon: TrendingUp, value: state.checkInStreak, label: t("cultivation.streak") },
+                    { icon: Sparkles, value: state.enlightenmentPoints, label: t("cultivation.ep") },
                   ].map((s) => (
                     <div key={s.label} className="cult-stat">
                       <s.icon className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
@@ -437,13 +430,13 @@ export default function CultivationPage() {
                     disabled={!canCheckIn}
                   >
                     <Flame className="h-5 w-5" />
-                    {canCheckIn ? (isZh ? "今日打卡" : "Check In Today") : (isZh ? "已完成今日修行" : "Completed Today")}
+                    {canCheckIn ? t("cultivation.checkInToday") : t("cultivation.completedToday")}
                   </button>
                   <button
                     className="w-full h-12 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border hover:border-foreground/20 rounded-lg transition-all"
                     onClick={() => setView("records")}
                   >
-                    {isZh ? "修行记录" : "Cultivation Records"}
+                    {t("cultivation.records")}
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -456,7 +449,7 @@ export default function CultivationPage() {
                 <div className="cult-card-glow p-5 sm:p-7 space-y-7">
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold">
-                      {isZh ? "一、今日心境" : "1. Today's Mood"}
+                      {t("cultivation.todayMood")}
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {moods.map((mood) => (
@@ -480,7 +473,7 @@ export default function CultivationPage() {
 
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold">
-                      {isZh ? "二、无为指数" : "2. Wu Wei Index"}
+                      {t("cultivation.wuWeiIndex")}
                     </h3>
                     <div className="flex justify-center gap-3">
                       {[1, 2, 3, 4, 5].map((score) => (
@@ -499,13 +492,13 @@ export default function CultivationPage() {
                       ))}
                     </div>
                     <p className="text-center text-xs text-muted-foreground">
-                      {isZh ? "无为而无不为，率性而为" : "Act without action, all is accomplished"}
+                      {t("cultivation.wuWeiDesc")}
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold">
-                      {isZh ? "三、道场感应" : "3. Dao Field"}
+                      {t("cultivation.daoField")}
                     </h3>
                     <div className="flex justify-center">
                       <button
@@ -518,22 +511,22 @@ export default function CultivationPage() {
                           boxShadow: daoFieldActive ? `0 0 20px ${currentRealm.color}15` : "none",
                         }}
                       >
-                        {daoFieldActive ? (isZh ? "已开启" : "Active") : (isZh ? "点击开启" : "Tap to Activate")}
+                        {daoFieldActive ? t("cultivation.daoFieldActive") : t("cultivation.daoFieldTap")}
                       </button>
                     </div>
                     <p className="text-center text-xs text-muted-foreground">
-                      {isZh ? "感应天地灵气，与万物共振" : "Sense the cosmic energy"}
+                      {t("cultivation.daoFieldDesc")}
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     <h3 className="text-base font-semibold">
-                      {isZh ? "四、心言自述" : "4. Inner Reflection"}
+                      {t("cultivation.innerReflection")}
                     </h3>
                     <Textarea
                       value={insight}
                       onChange={(e) => setInsight(e.target.value)}
-                      placeholder={isZh ? "今日所感所悟（选填）" : "Today's insights (optional)"}
+                      placeholder={t("cultivation.insightPlaceholder")}
                       className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-24 rounded-lg focus:border-foreground/25 focus:ring-0 resize-none"
                     />
                   </div>
@@ -552,10 +545,10 @@ export default function CultivationPage() {
                     {isLoadingAI ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        {isZh ? "道衍正在感应..." : "Dao Yan is sensing..."}
+                        {t("cultivation.sensing")}
                       </>
                     ) : (
-                      isZh ? "提交修行" : "Submit"
+                      t("cultivation.submit")
                     )}
                   </button>
                 </div>
@@ -572,14 +565,14 @@ export default function CultivationPage() {
                   >
                     +{earnedPoints}
                   </div>
-                  <div className="text-base text-muted-foreground">{isZh ? "悟道点" : "Enlightenment Points"}</div>
+                  <div className="text-base text-muted-foreground">{t("cultivation.enlightenmentPoints")}</div>
                   {hasLeveledUp && (
                     <div className="animate-in slide-in-from-bottom duration-700 pt-2">
                       <Badge
                         className="text-base px-5 py-2 font-bold border-0"
                         style={{ background: currentRealm.color, color: "#fff" }}
                       >
-                        {isZh ? "突破！" : "Breakthrough!"} {isZh ? currentRealm.name : currentRealm.nameEn}
+                        {t("cultivation.breakthrough")} {isZh ? currentRealm.name : currentRealm.nameEn}
                       </Badge>
                     </div>
                   )}
@@ -588,7 +581,7 @@ export default function CultivationPage() {
                 <div className="cult-card-glow p-5 sm:p-6 space-y-3">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4" style={{ color: currentRealm.color }} />
-                    <h3 className="text-sm font-semibold text-muted-foreground">{isZh ? "道衍回响" : "Dao Yan's Reflection"}</h3>
+                    <h3 className="text-sm font-semibold text-muted-foreground">{t("cultivation.daoReflection")}</h3>
                   </div>
                   <MarkdownRenderer content={aiGuidance} />
                 </div>
@@ -598,7 +591,7 @@ export default function CultivationPage() {
                   style={{ background: `linear-gradient(135deg, ${currentRealm.color}cc, ${currentRealm.color}88)`, color: "#fff" }}
                   onClick={() => setView("home")}
                 >
-                  {isZh ? "返回主界面" : "Return Home"}
+                  {t("cultivation.returnHome")}
                 </button>
               </div>
             )}
@@ -606,10 +599,10 @@ export default function CultivationPage() {
             {/* --- RECORDS SUB-VIEW --- */}
             {view === "records" && (
               <div className="space-y-4 animate-in fade-in duration-500">
-                <h2 className="text-xl font-bold mb-2">{isZh ? "修行记录" : "Records"}</h2>
+                <h2 className="text-xl font-bold mb-2">{t("cultivation.records")}</h2>
                 {state.records.length === 0 ? (
                   <div className="cult-card-glow p-8 text-center text-muted-foreground text-sm">
-                    {isZh ? "尚无修行记录" : "No records yet"}
+                    {t("cultivation.noRecords")}
                   </div>
                 ) : (
                   <div className="space-y-2.5">
@@ -633,7 +626,7 @@ export default function CultivationPage() {
                           {record.aiGuidance && (
                             <details className="text-xs text-muted-foreground group">
                               <summary className="cursor-pointer hover:text-foreground transition-colors">
-                                {isZh ? "查看回响" : "View Reflection"}
+                                {t("cultivation.viewReflection")}
                               </summary>
                               <div className="mt-2 pl-3 border-l-2 border-dashed border-border">
                                 <MarkdownRenderer content={record.aiGuidance} className="text-xs" />
@@ -658,7 +651,7 @@ export default function CultivationPage() {
             <div className="cult-card-glow p-5 sm:p-6 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="h-5 w-5" style={{ color: currentRealm.color }} />
-                <h2 className="text-base font-bold">{isZh ? "修炼体系概览" : "System Overview"}</h2>
+                <h2 className="text-base font-bold">{t("cultivation.systemOverview")}</h2>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                 {t("cultivation.tutorial.welcomeContent")}
@@ -669,7 +662,7 @@ export default function CultivationPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Flame className="h-5 w-5" style={{ color: currentRealm.color }} />
-                <h2 className="text-base font-bold">{isZh ? "境界体系" : "Cultivation Realms"}</h2>
+                <h2 className="text-base font-bold">{t("cultivation.realmSystem")}</h2>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {realms.map((realm) => (
@@ -688,7 +681,7 @@ export default function CultivationPage() {
                       </span>
                       {realm.id === currentRealm.id && (
                         <Badge className="ml-auto text-[10px] px-1.5 py-0 border-0 shrink-0" style={{ background: `${realm.color}20`, color: realm.color }}>
-                          {isZh ? "当前" : "Now"}
+                          {t("cultivation.now")}
                         </Badge>
                       )}
                     </div>
@@ -703,7 +696,7 @@ export default function CultivationPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5" style={{ color: currentRealm.color }} />
-                <h2 className="text-base font-bold">{isZh ? "心境积分表" : "Mood & Points"}</h2>
+                <h2 className="text-base font-bold">{t("cultivation.moodPoints")}</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {moods.map((mood) => (
@@ -725,27 +718,27 @@ export default function CultivationPage() {
             <div className="cult-card-glow p-5 sm:p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5" style={{ color: currentRealm.color }} />
-                <h2 className="text-base font-bold">{isZh ? "积分规则" : "Scoring Rules"}</h2>
+                <h2 className="text-base font-bold">{t("cultivation.scoringRules")}</h2>
               </div>
               <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex justify-between border-b border-border pb-2">
-                  <span>{isZh ? "心境基础分" : "Mood Base Points"}</span>
+                  <span>{t("cultivation.moodBase")}</span>
                   <span className="font-medium text-foreground">10–50 EP</span>
                 </div>
                 <div className="flex justify-between border-b border-border pb-2">
-                  <span>{isZh ? "无为指数（每星）" : "Wu Wei (per star)"}</span>
+                  <span>{t("cultivation.wuWeiPerStar")}</span>
                   <span className="font-medium text-foreground">+5 EP</span>
                 </div>
                 <div className="flex justify-between border-b border-border pb-2">
-                  <span>{isZh ? "道场感应开启" : "Dao Field Active"}</span>
+                  <span>{t("cultivation.daoFieldBonus")}</span>
                   <span className="font-medium text-foreground">+10 EP</span>
                 </div>
                 <div className="flex justify-between border-b border-border pb-2">
-                  <span>{isZh ? "心言自述（有内容）" : "Inner Reflection"}</span>
+                  <span>{t("cultivation.reflectionBonus")}</span>
                   <span className="font-medium text-foreground">+5 EP</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{isZh ? "连续打卡加成" : "Streak Bonus"}</span>
+                  <span>{t("cultivation.streakBonus")}</span>
                   <span className="font-medium text-foreground">×1.1 – ×1.5</span>
                 </div>
               </div>
