@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -232,6 +232,7 @@ const STORAGE_KEY = "daodejing-last-chapter";
 
 export default function DaodejingPage() {
   const navigate = useNavigate();
+  const { chapter: chapterParam } = useParams<{ chapter?: string }>();
   const { t } = useTranslation();
   const [selected, setSelected] = useState<DaodejingChapter | null>(null);
   const [content, setContent] = useState("");
@@ -241,10 +242,16 @@ export default function DaodejingPage() {
   const sections = useMemo(() => parseChapterSections(content), [content]);
   const footnotes = useMemo(() => parseFootnotes(sections.versionDiff), [sections.versionDiff]);
 
-  const loadChapter = useCallback(async (ch: DaodejingChapter) => {
+  const loadChapter = useCallback(async (ch: DaodejingChapter, updateUrl = true) => {
     setSelected(ch);
     setLoading(true);
     setContent("");
+    
+    // Update URL without triggering navigation
+    if (updateUrl) {
+      navigate(`/daodejing/${ch.num}`, { replace: false });
+    }
+    
     try {
       localStorage.setItem(STORAGE_KEY, String(ch.num));
     } catch { /* private browsing */ }
@@ -260,7 +267,7 @@ export default function DaodejingPage() {
     }
     setTocOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [t]);
+  }, [t, navigate]);
 
   // Restore last-read chapter from localStorage
   const lastReadChapter = useMemo(() => {
@@ -269,6 +276,20 @@ export default function DaodejingPage() {
       return DAODEJING_CHAPTERS.find(c => c.num === num) ?? null;
     } catch { return null; }
   }, []);
+
+  // Load chapter from URL param or restore last-read chapter
+  useEffect(() => {
+    if (chapterParam) {
+      const num = Number(chapterParam);
+      const chapter = DAODEJING_CHAPTERS.find(c => c.num === num);
+      if (chapter && chapter.num !== selected?.num) {
+        loadChapter(chapter, false); // Don't update URL (we're already at this URL)
+      }
+    } else if (!selected && lastReadChapter) {
+      // No URL param and no selected chapter -> restore last-read
+      loadChapter(lastReadChapter, true); // Update URL to reflect restored chapter
+    }
+  }, [chapterParam, selected, lastReadChapter, loadChapter]);
 
   const currentIndex = selected ? DAODEJING_CHAPTERS.findIndex(c => c.num === selected.num) : -1;
   const prevChapter = currentIndex > 0 ? DAODEJING_CHAPTERS[currentIndex - 1] : null;

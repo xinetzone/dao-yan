@@ -15,7 +15,7 @@ export const routers = [
       element: <CultivationPage />,
     },
     {
-      path: "/daodejing",
+      path: "/daodejing/:chapter?",
       name: 'daodejing',
       element: <DaodejingPage />,
     },
