@@ -5,6 +5,7 @@ import { SuggestedPrompts } from "@/components/SuggestedPrompts";
 import { ChatMessage } from "@/components/ChatMessage";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
 import { DocumentPanel } from "@/components/DocumentPanel";
+import { SEO } from "@/components/SEO";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useDocumentCollections } from "@/hooks/useDocumentCollections";
 import { BookOpen, AlertCircle, CheckCircle2, Globe, Menu, ChevronDown } from "lucide-react";
@@ -86,7 +87,13 @@ export default function Index() {
   }, [messages, isLoading, handleSubmit]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <>
+      <SEO 
+        description="与道衍智慧伙伴对话，探索帛书版《道德经》的智慧。基于马王堆帛书甲乙本，融合佛家直心观与量子意识理论，提供个性化修行指导。"
+        keywords="道衍,AI对话,道德经,帛书,老子,智慧问答,修行指导,国学AI"
+        url="https://dao-yan.enter.pro/"
+      />
+      <div className="flex h-screen overflow-hidden bg-background">
       <NavigationSidebar
         activeCollectionId={activeCollectionId}
         webSearchEnabled={webSearchEnabled}
@@ -267,5 +274,6 @@ export default function Index() {
         )}
       </div>
     </div>
+    </>
   );
 }
