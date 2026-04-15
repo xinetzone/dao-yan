@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import i18n from "@/i18n/config";
 import { AI_CHAT_ENDPOINT, SUPABASE_ANON_KEY } from "@/config";
+import { DAOYAN_SYSTEM_PROMPT, DAOYAN_SYSTEM_WITH_DOCS } from "@/data/system-prompt";
 
 export interface SearchResult {
   title: string;
@@ -78,7 +79,9 @@ export function useAIChat() {
             role: m.role, content: m.content,
           })),
           model,
-          ...(documentContext ? { system: `You are a helpful research assistant. The user has provided the following reference documents to help answer their questions. Use this information as context when responding:\n\n${documentContext}` } : {}),
+          ...(documentContext
+            ? { system: DAOYAN_SYSTEM_WITH_DOCS(documentContext) }
+            : { system: DAOYAN_SYSTEM_PROMPT }),
           ...(enableWebSearch ? { enable_web_search: true } : {}),
           ...(locale ? { locale } : {}),
         }),
