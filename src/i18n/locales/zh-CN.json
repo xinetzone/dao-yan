@@ -103,7 +103,8 @@
     "author": "秦波 著 · 81章",
     "search": "搜索章节",
     "searchPlaceholder": "章节号或标题",
-    "noResults": "无匹配章节"
+    "noResults": "无匹配章节",
+    "progress": "第 {{current}} 章 / 共 {{total}} 章"
   },
   "cultivation": {
     "guide": "修炼指南",

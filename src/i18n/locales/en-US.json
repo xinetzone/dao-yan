@@ -103,7 +103,8 @@
     "author": "By Qin Bo · 81 Chapters",
     "search": "Search Chapters",
     "searchPlaceholder": "Chapter # or title",
-    "noResults": "No matching chapters"
+    "noResults": "No matching chapters",
+    "progress": "Ch. {{current}} of {{total}}"
   },
   "cultivation": {
     "guide": "Cultivation Guide",
