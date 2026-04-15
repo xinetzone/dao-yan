@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
 import { DAODEJING_CHAPTERS, type DaodejingChapter } from "@/data/daodejing-index";
 
@@ -405,8 +406,26 @@ export default function DaodejingPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [prevChapter, nextChapter, loadChapter, navigate, setTocOpen]);
 
+  // Dynamic SEO based on selected chapter
+  const seoTitle = selected 
+    ? `${t("daodejing.chapter", { num: selected.num, cn: selected.cn })} - ${selected.title}`
+    : t("daodejing.title");
+  const seoDescription = selected
+    ? `阅读马王堆帛书版《道德经》第${selected.num}章（${selected.cn}）：${selected.title}。对应今本第${selected.todayChapter}章。包含帛书版原文、传世版对照、版本差异分析、直译与现代解读。`
+    : '马王堆帛书版《道德经》81章完整注读，提供帛书原文、传世版对照、版本差异分析、直译与现代解读。以秦波著《帛书老子注读》为底本。';
+  const seoUrl = selected 
+    ? `https://dao-yan.enter.pro/daodejing/${selected.num}`
+    : 'https://dao-yan.enter.pro/daodejing';
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <>
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        url={seoUrl}
+        keywords="道德经,帛书,老子,马王堆,道家,哲学,注读,秦波"
+      />
+      <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop TOC sidebar */}
       <aside className="hidden lg:flex flex-col w-72 shrink-0 border-r border-border bg-sidebar-background">
         <TOCPanel selected={selected} onSelect={loadChapter} t={t} />
@@ -592,5 +611,6 @@ export default function DaodejingPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

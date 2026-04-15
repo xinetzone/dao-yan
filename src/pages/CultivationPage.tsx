@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCultivation } from "@/hooks/useCultivation";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { SEO } from "@/components/SEO";
 import {
   ArrowLeft, Flame, Star, Calendar, TrendingUp,
   ChevronRight, Sparkles, Loader2, BookOpen, Award,
@@ -185,7 +186,14 @@ export default function CultivationPage() {
   const showSubViewBack = view === "checkin" || view === "result" || view === "records";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
+      <SEO 
+        title={t("cultivation.title")}
+        description="道衍修行打卡系统，基于帛书《道德经》与佛家直心观，结合 AI 智慧引导，帮助你记录修行状态、获取个性化修行建议。追踪无为指数、境界提升，开启智慧修行之旅。"
+        keywords="修行打卡,道德经,帛书,老子,佛家,直心观,AI修行指导,无为,境界,打卡系统"
+        url="https://dao-yan.enter.pro/cultivate"
+      />
+      <div className="min-h-screen bg-background text-foreground">
       <div className="relative max-w-2xl mx-auto px-4 py-4 sm:py-6 pb-12">
         {/* Floating decoration */}
         <div className="dao-float-square dao-float-1 hidden sm:block" />
@@ -749,5 +757,6 @@ export default function CultivationPage() {
 
       </div>
     </div>
+    </>
   );
 }

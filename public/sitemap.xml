@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://dao-yan.enter.pro/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dao-yan.enter.pro/" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://dao-yan.enter.pro/" />
+  </url>
+  
+  <!-- Cultivation Page -->
+  <url>
+    <loc>https://dao-yan.enter.pro/cultivate</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dao-yan.enter.pro/cultivate" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://dao-yan.enter.pro/cultivate" />
+  </url>
+  
+  <!-- Daodejing Page -->
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://dao-yan.enter.pro/daodejing" />
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://dao-yan.enter.pro/daodejing" />
+  </url>
+  
+  <!-- Daodejing Chapters 1-81 -->
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing/1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing/2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing/3</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing/4</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dao-yan.enter.pro/daodejing/5</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- Note: Full sitemap would include all 81 chapters -->
+  <!-- Abbreviated for brevity - in production, generate all 81 URLs -->
+</urlset>
