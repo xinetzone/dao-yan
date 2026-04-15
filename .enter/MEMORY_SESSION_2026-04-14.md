@@ -27,7 +27,21 @@ Full-day session with 20+ user requests spanning repository management, bug fixe
 - `5cd2c33` Pass i18n.language to edge function for locale-aware AI responses
 - `86d994a` Fix 5 critical bugs from full code review (see Bug History)
 
-### Phase 5: Security Hardening + Full Test + Accessibility Fix (14:30-15:10)
+### Phase 6: 品牌重命名 道研助手 → 道衍 (2026-04-15 02:00–02:52)
+- `26b679e` feat: 全站 4 处名称 → 道衍（zh-CN.json, en-US.json, index.html）
+- `ae6aada` fix: landing.subtitle → 陪你问道的智慧伙伴
+- `1ad325e` fix: SearchBar placeholder 向大师兄提问 → 向道衍提问
+- `a14fc18` docs: README clone URLs dao-research-assistant → dao-yan
+- `fa9217e` refactor: 全项目批量替换（21 files, 0 残留）; 道衍/dao-yan/README-EN 各处
+- `7ed671a` docs: README 副标题 + 简介改写为道衍定位语
+- `bc40a40` docs: 新建 README-EN.md（228 行完整英文文档）
+
+### Phase 7: AllTheory ψ=ψ(ψ) 替换量子场论 (2026-04-15 02:48–02:52)
+- `a81696c` refactor: 3 files 5 locations — 量子场论 → ψ=ψ(ψ)万物理论（zh-CN + en-US + CultivationPage）
+- `cd7a1b5` docs: README.md 中英文 量子场论 → ψ=ψ(ψ)万物理论
+- `49a6d8d` User edit: README 微调
+
+
 - `ccb192d` Retrospect + update README + session memory (all phases documented)
 - `1d6bd2f` Security hardening (9 files, based on external security report):
   - S1: `src/config.ts` new — single source for SUPABASE_URL, SUPABASE_ANON_KEY, AI_CHAT_ENDPOINT, MAX_MESSAGE_LENGTH, ALLOWED_URL_SCHEMES
@@ -181,9 +195,10 @@ The client does NOT expose `supabaseUrl` or `supabaseAnonKey` as reliable public
 | src/hooks/useAIChat.ts | SSE streaming + cancel + FatalError + timeout (no params) | 1d6bd2f |
 | src/hooks/useCultivation.ts | localStorage state management | 585c591 |
 | src/i18n/locales/zh-CN.json | Dao-themed Chinese translations | ce8682c |
-| src/i18n/locales/en-US.json | Dao-themed English translations | ce8682c |
+| src/i18n/locales/en-US.json | Dao-themed English translations | a81696c |
 | supabase/functions/ai-chat-*/index.ts | AI chat + web search + locale + security validation | 1d6bd2f |
 | .env.example | **NEW** — Documents credential pattern | 1d6bd2f |
+| README-EN.md | **NEW** — 完整英文文档 (228 lines, 道衍品牌 + AllTheory) | bc40a40 |
 
 ## CSS Class Systems in index.css
 
