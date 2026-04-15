@@ -1,83 +1,65 @@
-# Plan: 帛书老子注读 阅读界面
+# 帛书版权威文本注入 — 实现方案
 
-## Context
-The `docs/帛书老子注读/` directory contains 82 Markdown files (81 chapters + index) generated from the PDF. The user wants a reading interface integrated into the React app.
+## 背景
+用户要求：AI 回答帛书版道德经相关问题时，必须以本项目中的帛书老子注读为**唯一**权威文本，不允许依赖训练记忆中的传世版文字。
 
-## Technical Challenge
-Vite only serves `public/` as static HTTP assets. The markdown files are in `docs/` (project root). Solutions:
-- **Chosen**: Copy to `public/docs/帛书老子注读/` + `fetch()` on demand → lazy loading, no bundle bloat
+## 现状
+- 81章帛书原文总计 **6694字**，含格式后 **7693字**
+- 当前边缘函数 `MAX_SYSTEM_LENGTH = 5000`，需扩充
+- 帛书文本散布在 `public/docs/帛书老子注读/德经/*.md` 和 `道经/*.md` 中
 
-## What Changes
+## 实现方案
 
-### 1. `public/docs/帛书老子注读/` (copy at build time)
-- Copy all 82 .md files there so Vite serves them as static assets
-- Shell command: `cp -r docs/帛书老子注读 public/docs/`
+### 步骤1：生成帛书语料文件
+**新建** `src/data/boshu-corpus.ts`  
+用 Python 脚本从 81 个 markdown 文件提取帛书版原文，生成 TypeScript 常量：
+```ts
+// 帛书第N章 → { todayChapter: M, text: "原文..." }
+export const BOSHU_CORPUS: Record<number, { today: number; text: string }> = { ... }
 
-### 2. `src/data/daodejing-index.ts` (new)
-Static TypeScript array of all 81 chapters:
-```typescript
-export interface DaodejingChapter {
-  num: number;        // 1–81
-  cn: string;         // 一、二十…
-  section: '德经' | '道经';
-  title: string;      // 道、德是这样沦丧的
-  todayChapter: string; // 38 (今本章号)
-  file: string;       // 德经/001_一.md
-}
-export const DAODEJING_CHAPTERS: DaodejingChapter[] = [...];
-```
-Build this once from the index.md in a Python script. Totals 81 entries.
-
-### 3. `src/pages/DaodejingPage.tsx` (new)
-Two-panel layout:
-- **Desktop** (lg+): fixed 260px left TOC sidebar + scrollable content on right
-- **Mobile**: full-width content, TOC in Sheet/drawer toggled by button
-
-TOC sidebar:
-- **折叠面板**：德经（1-44章）和道经（45-81章）各自可展开/收起，使用 `Collapsible` 组件
-- 默认展开当前章所在分组
-- Chapter list: `第N章 · title` rows, selected state highlighted with primary color
-
-Content panel:
-- Header: chapter number + title + 今本对应章 badge
-- Prev/Next chapter navigation buttons
-- Markdown rendered via existing `<MarkdownRenderer>` component
-- Empty state when no chapter selected (show intro)
-
-State: `selectedChapter: DaodejingChapter | null`, `content: string`, `loading: boolean`
-
-Fetch: `fetch(\`/docs/帛书老子注读/${chapter.file}\`)` on chapter select.
-
-### 4. `src/router.tsx` (modify)
-Add route: `{ path: "/daodejing", name: "daodejing", element: <DaodejingPage /> }`
-
-### 5. `src/components/NavigationSidebar.tsx` (modify)
-Add nav item between 修行打卡 and 修炼指南:
-```tsx
-<Button onClick={() => { navigate("/daodejing"); onClose(); }}>
-  <ScrollText className="h-4 w-4" />
-  <span>帛书老子</span>
-</Button>
+// 预生成的完整文本块（注入 system prompt 用）
+export const BOSHU_FULL_TEXT = `帛1(今38): 上德不德...
+帛2(今39): 昔之得一者...
+...`
 ```
 
-## Files Modified
-- `src/data/daodejing-index.ts` — NEW, static chapter metadata
-- `src/pages/DaodejingPage.tsx` — NEW, reading page
-- `src/router.tsx` — add route
-- `src/components/NavigationSidebar.tsx` — add nav item
-- `public/docs/帛书老子注读/` — copied markdown files (81+1)
+### 步骤2：重写系统提示词
+**更新** `src/data/system-prompt.ts`  
+导入 `BOSHU_FULL_TEXT`，注入到系统提示词中作为唯一权威参考。结构：
+```
+你是"道衍"...
 
-## Reused Patterns
-- `MarkdownRenderer` component for content rendering
-- `Sheet` + `SheetContent` from shadcn for mobile TOC drawer
-- `ScrollArea` for TOC list
-- Same page layout pattern as `CultivationPage.tsx`
-- Design tokens from `index.css` (primary = rust red, accent = warm yellow)
+## ⚠️ 帛书版唯一权威文本（必须以此为准）
+本项目《帛书老子注读》（秦波著）完整帛书原文如下。
+当被询问帛书版任何内容时，必须严格以下文为准，禁止使用训练记忆中的传世版文字。
 
-## Verification
-1. Navigate to `/daodejing` via sidebar nav
-2. TOC lists all 81 chapters in 德经/道经 sections
-3. Click chapter → content renders correctly via MarkdownRenderer
-4. Prev/Next navigation works
-5. Mobile: TOC drawer opens/closes
-6. Dark mode works
+[全部81章帛书原文]
+
+## 章节编排
+德经第1-44章在前，道经第45-81章在后。括号为对应传世今本章号。
+
+## 回应规则
+- 引用原文时必须从上方文本取用，不得依赖训练记忆
+- 如遇不确定，明确说明"请以帛书老子注读原文为准"
+- 始终与用户使用同一语言
+```
+
+### 步骤3：扩充边缘函数限制
+**更新** `supabase/functions/ai-chat-167c2bc1450e/index.ts`
+```ts
+const MAX_SYSTEM_LENGTH = 20000; // 从5000提升至20000
+```
+
+### 步骤4：更新文档上下文函数
+**更新** `DAOYAN_SYSTEM_WITH_DOCS`：当用户阅读具体章节时，注入的章节内容优先级最高，并明确告知 AI 该章节文本来自帛书老子注读。
+
+## 修改文件清单
+1. `src/data/boshu-corpus.ts` — 新建，包含全部81章帛书原文
+2. `src/data/system-prompt.ts` — 更新，注入完整帛书语料
+3. `supabase/functions/ai-chat-167c2bc1450e/index.ts` — MAX_SYSTEM_LENGTH 扩充至 20000
+
+## 验证方法
+询问 AI 以下问题，检查答案是否与项目帛书原文一致：
+- "帛书版第一章原文是什么？" → 应返回"上德不德，是以有德..."
+- "帛书版道德经第45章原文？" → 应返回"道可道也，非恒道也..."
+- "帛书版'千里之行'是什么？" → 应回答帛书无此句，正确为"百仞之高，始于足下"
