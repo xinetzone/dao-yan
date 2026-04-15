@@ -34,9 +34,9 @@ Two-panel layout:
 - **Mobile**: full-width content, TOC in Sheet/drawer toggled by button
 
 TOC sidebar:
-- 德经/道经 section headers
-- Chapter list: `第N章 · title` rows, selected state highlighted
-- Current chapter highlighted with primary color
+- **折叠面板**：德经（1-44章）和道经（45-81章）各自可展开/收起，使用 `Collapsible` 组件
+- 默认展开当前章所在分组
+- Chapter list: `第N章 · title` rows, selected state highlighted with primary color
 
 Content panel:
 - Header: chapter number + title + 今本对应章 badge
