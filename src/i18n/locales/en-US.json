@@ -1,12 +1,12 @@
 {
   "landing": {
-    "title": "Dao Research",
+    "title": "道衍",
     "subtitle": "Mawangdui Silk Text Dao De Jing AI Scholar",
     "searchPlaceholder": "Ask the master...",
     "tryPrompts": "Try these topics"
   },
   "chat": {
-    "header": "Dao Research",
+    "header": "道衍",
     "newChat": "New Chat",
     "searchPlaceholder": "Ask a follow-up...",
     "thinking": "Thinking...",

@@ -1,12 +1,12 @@
 {
   "landing": {
-    "title": "道研助手",
+    "title": "道衍",
     "subtitle": "帛书版《道德经》AI 学者",
     "searchPlaceholder": "向大师兄提问...",
     "tryPrompts": "试试这些话题"
   },
   "chat": {
-    "header": "道研助手",
+    "header": "道衍",
     "newChat": "新对话",
     "searchPlaceholder": "继续提问...",
     "thinking": "思考中...",
