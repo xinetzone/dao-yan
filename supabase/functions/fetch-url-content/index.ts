@@ -53,20 +53,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Add aggressive timeout to prevent hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; ResearchBot/1.0)",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7",
       },
       redirect: "follow",
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return new Response(JSON.stringify({ error: `Failed to fetch URL: ${response.status} ${response.statusText}` }), {

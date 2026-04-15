@@ -13,9 +13,9 @@
 ### 方案 1：检查仓库是否已创建（最可能）
 
 1. **访问** https://github.com/daoApps
-2. **检查**是否有 `dao-research-assistant` 仓库
+2. **检查**是否有 `dao-yan` 仓库
 3. **如果没有**，点击 "New repository" 创建：
-   - Repository name: `dao-research-assistant`
+   - Repository name: `dao-yan`
    - Visibility: Public
    - ❌ 不要勾选 "Initialize with README"
 4. **创建后**，回来告诉我"仓库已创建"
@@ -28,7 +28,7 @@
 - 如果你是组织成员，确保有创建仓库的权限
 - 如果不是，可以在个人账号下创建：
   ```
-  https://github.com/YOUR_USERNAME/dao-research-assistant
+  https://github.com/YOUR_USERNAME/dao-yan
   ```
 
 **告诉我你的 GitHub 用户名**，我可以帮你调整推送地址。
@@ -40,7 +40,7 @@
 1. **告诉我你的 GitHub 用户名**（例如：`username`）
 2. 我会修改推送地址为：
    ```
-   https://github.com/username/dao-research-assistant
+   https://github.com/username/dao-yan
    ```
 3. 然后重新推送
 
@@ -62,7 +62,7 @@
 
 ### C. 检查现有仓库
 ```
-请检查这个地址：https://github.com/xxx/dao-research-assistant
+请检查这个地址：https://github.com/xxx/dao-yan
 ```
 
 ---

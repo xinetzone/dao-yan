@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 道研助手 - GitHub 发布脚本
+# 道衍 - GitHub 发布脚本
 # 使用方法：bash publish-to-github.sh
 
 set -e  # 遇到错误立即退出
 
-echo "🚀 道研助手 - GitHub 发布脚本"
+echo "🚀 道衍 - GitHub 发布脚本"
 echo "================================"
 echo ""
 
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # GitHub 仓库信息
 GITHUB_ORG="daoApps"
-REPO_NAME="dao-research-assistant"
+REPO_NAME="dao-yan"
 GITHUB_URL="https://github.com/${GITHUB_ORG}/${REPO_NAME}.git"
 
 echo "📋 发布信息："

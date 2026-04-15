@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import i18n from "@/i18n/config";
+import { AI_CHAT_ENDPOINT, SUPABASE_ANON_KEY } from "@/config";
 
 export interface SearchResult {
   title: string;
@@ -25,7 +26,15 @@ function getUserErrorMessage(code: string, backendMessage: string): string {
   return translated !== key ? translated : i18n.t('errors.api_error');
 }
 
-export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
+/** Fatal error class to prevent fetchEventSource from retrying */
+class FatalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FatalError";
+  }
+}
+
+export function useAIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,9 +44,15 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
     content: string,
     model = "anthropic/claude-sonnet-4.5",
     documentContext?: string,
-    enableWebSearch?: boolean
+    enableWebSearch?: boolean,
+    locale?: string
   ) => {
-    abortControllerRef.current = new AbortController();
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    // Timeout: 60s for web search, 30s for normal
+    const timeoutMs = enableWebSearch ? 60000 : 30000;
+    const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
 
     const userMessage: Message = { role: "user", content };
     const assistantMessage: Message = { 
@@ -49,13 +64,14 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
     setError(null);
 
     const blocks = new Map<number, { type: string; content: string }>();
+    let receivedAnyData = false;
 
     try {
-      await fetchEventSource(`${supabaseUrl}/functions/v1/ai-chat-167c2bc1450e`, {
+      await fetchEventSource(AI_CHAT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseAnonKey}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages: [...messages, userMessage].map(m => ({
@@ -64,8 +80,10 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
           model,
           ...(documentContext ? { system: `You are a helpful research assistant. The user has provided the following reference documents to help answer their questions. Use this information as context when responding:\n\n${documentContext}` } : {}),
           ...(enableWebSearch ? { enable_web_search: true } : {}),
+          ...(locale ? { locale } : {}),
         }),
-        signal: abortControllerRef.current.signal,
+        signal: abortController.signal,
+        openWhenHidden: true,
         
         async onopen(response) {
           const contentType = response.headers.get("content-type");
@@ -78,32 +96,37 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
                 try {
                   const errorData = JSON.parse(dataMatch[1]);
                   if (errorData.type === "error" && errorData.error?.message) {
-                    throw new Error(errorData.error.message);
+                    throw new FatalError(errorData.error.message);
                   }
                 } catch (parseError) {
-                  if (parseError instanceof Error && parseError.message !== "Unexpected token") {
-                    throw parseError;
-                  }
+                  if (parseError instanceof FatalError) throw parseError;
                 }
               }
             }
             
             if (contentType?.includes("application/json")) {
               const errorData = await response.json();
-              throw new Error(errorData.error?.message || errorData.error || `Request failed: ${response.status}`);
+              throw new FatalError(errorData.error?.message || errorData.error || `Request failed: ${response.status}`);
             }
             
-            throw new Error(`Request failed: ${response.status}`);
+            throw new FatalError(`Request failed: ${response.status}`);
           }
           
           if (!contentType?.includes("text/event-stream")) {
-            throw new Error(`Expected text/event-stream, got: ${contentType}`);
+            throw new FatalError(`Expected text/event-stream, got: ${contentType}`);
           }
         },
         
         onmessage(event) {
           if (!event.data) return;
-          const data = JSON.parse(event.data);
+          receivedAnyData = true;
+
+          let data;
+          try {
+            data = JSON.parse(event.data);
+          } catch {
+            return; // skip unparseable events (e.g. nexus_usage)
+          }
           
           if (data.type === "error") {
             const errorMsg = getUserErrorMessage(
@@ -142,17 +165,32 @@ export function useAIChat(supabaseUrl: string, supabaseAnonKey: string) {
             }
           }
         },
-        onerror(err) { throw err; },
+        onerror(err) {
+          // Always throw FatalError to prevent auto-retry
+          if (err instanceof FatalError) throw err;
+          throw new FatalError(err?.message || "Connection lost");
+        },
       });
     } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
+      if (err instanceof Error && err.name === "AbortError") {
+        // Timed out or user cancelled
+        if (!receivedAnyData) {
+          const isZh = i18n.language === "zh-CN";
+          setError(isZh ? "请求超时，请稍后重试" : "Request timed out, please try again");
+          setMessages(prev => prev.slice(0, -1));
+        } else {
+          // Partial data received, just mark stream as done
+          setMessages(prev => updateLastAssistant(prev, { isStreaming: false }));
+        }
+      } else if (err instanceof Error) {
         setError(err.message || "Failed to send message");
         setMessages(prev => prev.slice(0, -1));
       }
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
-  }, [messages, supabaseUrl, supabaseAnonKey]);
+  }, [messages]);
 
   const cancel = useCallback(() => {
     abortControllerRef.current?.abort();

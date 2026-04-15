@@ -25,7 +25,7 @@
 1. 访问 https://github.com/daoApps
 2. 点击 "New repository" 按钮
 3. 填写仓库信息：
-   - **Repository name**: `dao-research-assistant`
+   - **Repository name**: `dao-yan`
    - **Description**: `AI-powered research assistant fusing Daoist philosophy with modern technology 融合道家智慧与 AI 技术的研究助手`
    - **Visibility**: `Public` （推荐）
    - ⚠️ **不要** 勾选 "Initialize this repository with a README"（我们已经有了）
@@ -42,7 +42,7 @@ cd /workspace/thread
 git remote remove origin
 
 # 添加 GitHub 仓库作为 origin
-git remote add origin https://github.com/xinetzone/dao-research-assistant.git
+git remote add origin https://github.com/daoApps/dao-yan.git
 
 # 验证远程仓库配置
 git remote -v
@@ -50,8 +50,8 @@ git remote -v
 
 预期输出：
 ```
-origin  https://github.com/xinetzone/dao-research-assistant.git (fetch)
-origin  https://github.com/xinetzone/dao-research-assistant.git (push)
+origin  https://github.com/daoApps/dao-yan.git (fetch)
+origin  https://github.com/daoApps/dao-yan.git (push)
 ```
 
 ### Step 3: 推送代码到 GitHub
@@ -101,7 +101,7 @@ git push origin --tags
 
 ### 检查清单
 
-访问 https://github.com/xinetzone/dao-research-assistant 确认：
+访问 https://github.com/daoApps/dao-yan 确认：
 
 - [ ] 仓库可以正常访问
 - [ ] README.md 完整展示
@@ -205,6 +205,6 @@ git push origin v1.1.0
 
 ---
 
-**项目链接**: https://github.com/xinetzone/dao-research-assistant
+**项目链接**: https://github.com/daoApps/dao-yan
 
-**祝项目顺利！愿道研助手帮助更多人找到内心的宁静与智慧 🌟**
+**祝项目顺利！愿道衍帮助更多人找到内心的宁静与智慧 🌟**

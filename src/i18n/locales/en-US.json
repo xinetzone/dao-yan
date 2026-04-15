@@ -1,12 +1,12 @@
 {
   "landing": {
-    "title": "What can I help you research?",
-    "subtitle": "Ask me anything and get detailed, well-researched answers powered by AI",
-    "searchPlaceholder": "Ask anything...",
-    "tryPrompts": "Try these prompts"
+    "title": "道衍",
+    "subtitle": "Your Wise Companion on the Path of Dao",
+    "searchPlaceholder": "Ask the master...",
+    "tryPrompts": "Try these topics"
   },
   "chat": {
-    "header": "Research Assistant",
+    "header": "道衍",
     "newChat": "New Chat",
     "searchPlaceholder": "Ask a follow-up...",
     "thinking": "Thinking...",
@@ -42,28 +42,24 @@
   },
   "prompts": {
     "creative": {
-      "title": "Creative Writing",
-      "text": "Help me write a compelling story about artificial intelligence"
+      "title": "Original Text",
+      "text": "How to interpret the Silk Text opening: 'The Way that can be told is not the eternal Way'?",
+      "text2": "What state is described by 'For learning, gain daily; for the Dao, lose daily'?"
     },
     "market": {
-      "title": "Market Analysis",
-      "text": "What are the key trends in AI technology for 2026?"
+      "title": "Versions",
+      "text": "How does the Mawangdui Silk Text differ from the received version?",
+      "text2": "What are the core differences between the Guodian bamboo slips and Mawangdui silk text?"
     },
     "research": {
-      "title": "Research",
-      "text": "Explain quantum computing in simple terms"
+      "title": "Philosophy",
+      "text": "What does 'Superior virtue is not virtuous, thus it has virtue' mean?",
+      "text2": "Compare Daoist Wu Wei with Buddhist Emptiness"
     },
     "coding": {
-      "title": "Coding Help",
-      "text": "How do I optimize React performance with large datasets?"
-    },
-    "problem": {
-      "title": "Problem Solving",
-      "text": "What's the best approach to learn a new programming language?"
-    },
-    "tech": {
-      "title": "Technology",
-      "text": "What are the ethical implications of artificial intelligence?"
+      "title": "Application",
+      "text": "How to apply Wu Wei (non-action) to modern life?",
+      "text2": "How does 'Dao gives birth to One, One to Two' reflect the ψ=ψ(ψ) Theory of Everything?"
     }
   },
   "errors": {
@@ -77,7 +73,7 @@
   },
   "webSearch": {
     "title": "Web Search",
-    "enableAutoSearch": "Enable web search",
+    "enableAutoSearch": "Web search enabled",
     "sources": "Sources",
     "searching": "Searching the web..."
   },
@@ -99,7 +95,7 @@
       "startCheckIn": "Start Check-in",
       "rewardReceived": "Received Welcome Gift",
       "pointsGifted": "{{points}} EP Gifted",
-      "welcomeContent": "Integrating the Dao De Jing's 'action through non-action', Buddhist 'unmoving direct mind', and quantum field theory. Daily check-ins cultivate awareness and transcend the cycle of reincarnation.",
+      "welcomeContent": "Integrating the Dao De Jing's 'action through non-action', Buddhist 'unmoving direct mind', and the ψ=ψ(ψ) Theory of Everything's collapse cosmology. Daily check-ins cultivate awareness and transcend the cycle of reincarnation.",
       "realmsContent": "10 realms on the cultivation path: Mortal → Qi Refining → Foundation → Golden Core → Nascent Soul → Spirit Transformation → Integration → Mahayana → Tribulation → True Immortal. Each realm requires different Enlightenment Points.",
       "moodsContent": "Daily observe your mind state:\n• Transparent: Mind like mirror, all is empty (+15)\n• Tranquil: Still water, no attachments (+10)\n• Ripple: Gentle waves, foundation stable (+5)\n• Chaotic: Mind scattered, needs stillness (+3)\n\nHonest reflection is practice.",
       "firstCheckInContent": "Now, let's complete your first check-in together. Choose your mood, set Wu Wei score, sense the Dao field, and write your reflections. The Master will provide personalized guidance based on your practice.",

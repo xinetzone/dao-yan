@@ -2,7 +2,7 @@
 
 ## ✅ 项目已成功发布到 GitHub
 
-**仓库地址**：https://github.com/xinetzone/dao-research-assistant
+**仓库地址**：https://github.com/xinetzone/dao-yan
 
 ---
 
@@ -21,7 +21,7 @@
 
 ### 1. 立即访问你的项目 ⭐
 
-👉 https://github.com/xinetzone/dao-research-assistant
+👉 https://github.com/xinetzone/dao-yan
 
 你会看到：
 - ✅ 完整的项目介绍（README.md）
@@ -51,15 +51,15 @@ ai, research, dao, cultivation, react, typescript, supabase, claude, i18n, web-s
 1. 点击右侧 **"Releases"**
 2. 点击 **"Create a new release"**
 3. 选择标签：**v1.0.0**
-4. Release title：`v1.0.0 - 道研助手首次发布 / Initial Release`
+4. Release title：`v1.0.0 - 道衍首次发布 / Initial Release`
 5. 描述（可复制以下内容）：
 
 ```markdown
-# 🎉 道研助手 v1.0.0 - 首次发布
+# 🎉 道衍 v1.0.0 - 首次发布
 
 ## ✨ 核心特色
 
-道研助手是一款融合传统哲学智慧与现代 AI 技术的创新应用，旨在帮助用户在信息洪流中找到内心的宁静与智慧。
+道衍是一款融合传统哲学智慧与现代 AI 技术的创新应用，旨在帮助用户在信息洪流中找到内心的宁静与智慧。
 
 ### 主要功能
 
@@ -154,12 +154,12 @@ MIT License - 详见 [LICENSE](./LICENSE)
 
 ---
 
-**愿道研助手帮助每一位使用者，在信息洪流中找到属于自己的那份宁静与智慧。** 🌟
+**愿道衍帮助每一位使用者，在信息洪流中找到属于自己的那份宁静与智慧。** 🌟
 
 ---
 
 **开发者**: [@xinetzone](https://github.com/xinetzone)  
-**项目地址**: https://github.com/xinetzone/dao-research-assistant  
+**项目地址**: https://github.com/xinetzone/dao-yan  
 **技术博客**: [待添加]
 ```
 
@@ -177,9 +177,9 @@ MIT License - 详见 [LICENSE](./LICENSE)
 在 README.md 顶部添加项目徽章（可选）：
 
 ```markdown
-[![GitHub Stars](https://img.shields.io/github/stars/xinetzone/dao-research-assistant?style=social)](https://github.com/xinetzone/dao-research-assistant)
+[![GitHub Stars](https://img.shields.io/github/stars/xinetzone/dao-yan?style=social)](https://github.com/xinetzone/dao-yan)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/xinetzone/dao-research-assistant/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/xinetzone/dao-yan/releases)
 [![React](https://img.shields.io/badge/React-19.1-61dafb.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6.svg)](https://www.typescriptlang.org/)
 ```
@@ -214,14 +214,14 @@ MIT License - 详见 [LICENSE](./LICENSE)
 
 🛠️ 技术栈：React 19 + TypeScript + Supabase
 
-GitHub: https://github.com/xinetzone/dao-research-assistant
+GitHub: https://github.com/xinetzone/dao-yan
 
 #开源 #AI #React #道家智慧
 ```
 
 English:
 ```
-🎉 Just open-sourced dao-research-assistant - an AI research app fusing Daoist philosophy with modern tech!
+🎉 Just open-sourced dao-yan - an AI research app fusing Daoist philosophy with modern tech!
 
 ✨ Features:
 - AI chat (Claude Sonnet 4.5)
@@ -231,7 +231,7 @@ English:
 
 🛠️ Stack: React 19 + TypeScript + Supabase
 
-GitHub: https://github.com/xinetzone/dao-research-assistant
+GitHub: https://github.com/xinetzone/dao-yan
 
 #opensource #ai #react #philosophy
 ```
@@ -295,11 +295,11 @@ GitHub: https://github.com/xinetzone/dao-research-assistant
 
 的创新产品！
 
-**愿道研助手能帮助更多人找到内心的宁静与智慧！** 🌟
+**愿道衍能帮助更多人找到内心的宁静与智慧！** 🌟
 
 ---
 
-**项目地址**：https://github.com/xinetzone/dao-research-assistant  
+**项目地址**：https://github.com/xinetzone/dao-yan  
 **Star 项目**：如果喜欢，给项目点个 ⭐  
 **参与贡献**：欢迎提交 Issues 和 Pull Requests  
 

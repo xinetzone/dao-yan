@@ -11,7 +11,7 @@
 访问 https://github.com/settings/tokens，创建一个新的 token：
 
 - 点击 "Generate new token (classic)"
-- Note: `dao-research-assistant-push`
+- Note: `dao-yan-push`
 - Expiration: 90 days
 - 勾选：✅ `repo` (完整仓库权限)
 - 点击 "Generate token"
@@ -42,10 +42,10 @@ cd /workspace/thread
 export GITHUB_TOKEN="YOUR_TOKEN"
 
 # 推送主分支
-git push "https://${GITHUB_TOKEN}@github.com/xinetzone/dao-research-assistant.git" main
+git push "https://${GITHUB_TOKEN}@github.com/daoApps/dao-yan.git" main
 
 # 推送标签
-git push "https://${GITHUB_TOKEN}@github.com/xinetzone/dao-research-assistant.git" --tags
+git push "https://${GITHUB_TOKEN}@github.com/daoApps/dao-yan.git" --tags
 
 # 设置上游
 git branch --set-upstream-to=github/main main
@@ -59,7 +59,7 @@ git branch --set-upstream-to=github/main main
 cd /workspace/thread
 
 # 修改远程 URL 为 SSH
-git remote set-url github git@github.com:xinetzone/dao-research-assistant.git
+git remote set-url github git@github.com:daoApps/dao-yan.git
 
 # 推送
 git push -u github main
@@ -95,7 +95,7 @@ git branch -a
 git ls-remote --tags github
 
 # 或直接访问仓库
-open https://github.com/xinetzone/dao-research-assistant
+open https://github.com/daoApps/dao-yan
 ```
 
 你应该能看到：
@@ -129,7 +129,7 @@ open https://github.com/xinetzone/dao-research-assistant
 
 ### Q4: 远程仓库不存在
 
-**解决方案**：确认已在 GitHub 上创建了 `dao-research-assistant` 仓库。
+**解决方案**：确认已在 GitHub 上创建了 `dao-yan` 仓库。
 
 ---
 

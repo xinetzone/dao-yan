@@ -1,78 +1,254 @@
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
+// Security response headers added to every non-OPTIONS response
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+};
 
-interface ToolUse {
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
+const AI_API_URL = "https://api.enter.pro/code/api/v1/ai/messages";
+
+// Allowlist of permitted model identifiers
+const ALLOWED_MODELS = new Set([
+  "anthropic/claude-sonnet-4.5",
+  "anthropic/claude-haiku-4-5",
+  "anthropic/claude-opus-4-5",
+  "google/gemini-2.5-pro",
+  "google/gemini-2.0-flash",
+  "openai/gpt-4o",
+  "openai/gpt-4o-mini",
+]);
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.5";
+
+// Input limits
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_LENGTH = 10000;
+const MAX_SYSTEM_LENGTH = 5000;
+const MAX_SEARCH_QUERY_LENGTH = 500;
+
+interface SearchResult {
+  title: string;
+  url: string;
+  snippet: string;
 }
 
-async function callWebSearch(query: string, timeoutMs = 15000): Promise<Array<{ title: string; url: string; snippet: string }>> {
+// Multiple search strategies for reliability
+async function webSearch(query: string): Promise<SearchResult[]> {
+  // Sanitize query
+  const safeQuery = query.substring(0, MAX_SEARCH_QUERY_LENGTH).trim();
+
+  // Strategy 1: SearXNG public instances (JSON API)
+  const searxInstances = [
+    "https://search.sapti.me",
+    "https://searx.tiekoetter.com",
+    "https://search.bus-hit.me",
+    "https://searx.be",
+  ];
+
+  for (const instance of searxInstances) {
+    try {
+      const results = await searxSearch(instance, safeQuery);
+      if (results.length > 0) {
+        console.log(`[web-search] searx=${instance} query="${safeQuery}" results=${results.length}`);
+        return results;
+      }
+    } catch (err) {
+      console.warn(`[web-search] searx ${instance} failed:`, (err as Error).message);
+    }
+  }
+
+  // Strategy 2: DuckDuckGo HTML fallback
+  try {
+    const results = await duckduckgoSearch(safeQuery);
+    if (results.length > 0) {
+      console.log(`[web-search] ddg query="${safeQuery}" results=${results.length}`);
+      return results;
+    }
+  } catch (err) {
+    console.warn("[web-search] ddg failed:", (err as Error).message);
+  }
+
+  // Strategy 3: DuckDuckGo Lite
+  try {
+    const results = await duckduckgoLiteSearch(safeQuery);
+    if (results.length > 0) {
+      console.log(`[web-search] ddg-lite query="${safeQuery}" results=${results.length}`);
+      return results;
+    }
+  } catch (err) {
+    console.warn("[web-search] ddg-lite failed:", (err as Error).message);
+  }
+
+  console.error(`[web-search] ALL strategies failed for query="${safeQuery}"`);
+  return [];
+}
+
+async function searxSearch(instance: string, query: string): Promise<SearchResult[]> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = setTimeout(() => controller.abort(), 6000);
 
-  try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/web-search`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ query, limit: 5 }),
-      signal: controller.signal,
-    });
+  const url = `${instance}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=auto`;
+  const resp = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    signal: controller.signal,
+  });
+  clearTimeout(timeout);
 
-    clearTimeout(timeoutId);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
-    if (!response.ok) {
-      throw new Error(`Web search failed: ${response.status}`);
+  const data = await resp.json();
+  const results: SearchResult[] = [];
+
+  if (data.results && Array.isArray(data.results)) {
+    for (const r of data.results.slice(0, 5)) {
+      if (r.title && r.url) {
+        results.push({
+          title: r.title,
+          url: r.url,
+          snippet: (r.content || "").substring(0, 300),
+        });
+      }
     }
-
-    const data = await response.json();
-    return data.results || [];
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
   }
+  return results;
 }
 
-async function fetchUrlContent(url: string, timeoutMs = 10000): Promise<{ content: string; title: string }> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+async function duckduckgoSearch(query: string): Promise<SearchResult[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-url-content`, {
-      method: "POST",
+  const resp = await fetch(
+    `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+    {
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8",
       },
-      body: JSON.stringify({ url }),
       signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      return { content: "", title: "" };
     }
+  );
+  clearTimeout(timeout);
 
-    const data = await response.json();
-    return { content: data.content || "", title: data.title || "" };
-  } catch (error) {
-    console.log(`Failed to fetch ${url}:`, error.message);
-    return { content: "", title: "" };
+  const html = await resp.text();
+  const results: SearchResult[] = [];
+
+  const resultBlocks = html.split('class="result__body"');
+  for (let i = 1; i < Math.min(resultBlocks.length, 6); i++) {
+    const block = resultBlocks[i];
+    const titleMatch = block.match(/class="result__a"[^>]*>([^<]+)</);
+    const title = titleMatch ? decodeHTMLEntities(titleMatch[1]).trim() : "";
+    const urlMatch = block.match(/href="\/\/duckduckgo\.com\/l\/\?uddg=([^&"]+)/);
+    const url = urlMatch ? decodeURIComponent(urlMatch[1]) : "";
+    const snippetMatch = block.match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/);
+    let snippet = snippetMatch ? decodeHTMLEntities(snippetMatch[1].replace(/<[^>]+>/g, "")).trim() : "";
+    snippet = snippet.substring(0, 300);
+    if (title && url) {
+      results.push({ title, url, snippet });
+    }
   }
+  return results;
+}
+
+async function duckduckgoLiteSearch(query: string): Promise<SearchResult[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  const resp = await fetch(
+    `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}`,
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html",
+      },
+      signal: controller.signal,
+    }
+  );
+  clearTimeout(timeout);
+
+  const html = await resp.text();
+  const results: SearchResult[] = [];
+
+  const linkRegex = /class='result-link'[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
+  const snippetRegex = /class="result-snippet">([^<]*)/g;
+
+  const links: { url: string; title: string }[] = [];
+  let m;
+  while ((m = linkRegex.exec(html)) !== null) {
+    links.push({ url: m[1], title: decodeHTMLEntities(m[2]).trim() });
+  }
+
+  const snippets: string[] = [];
+  while ((m = snippetRegex.exec(html)) !== null) {
+    snippets.push(decodeHTMLEntities(m[1]).trim().substring(0, 300));
+  }
+
+  for (let i = 0; i < Math.min(links.length, 5); i++) {
+    if (links[i].title && links[i].url) {
+      results.push({
+        title: links[i].title,
+        url: links[i].url,
+        snippet: snippets[i] || "",
+      });
+    }
+  }
+  return results;
+}
+
+function decodeHTMLEntities(str: string): string {
+  return str
+    .replace(/&#x27;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
+function buildSearchContext(results: SearchResult[]): string {
+  if (results.length === 0) return "";
+  let ctx = "## Web Search Results\n\n";
+  for (const r of results) {
+    ctx += `### ${r.title}\nSource: ${r.url}\n${r.snippet}\n\n`;
+  }
+  return ctx;
+}
+
+function getLanguageInstruction(locale?: string): string {
+  if (!locale) return "";
+  if (locale.startsWith("zh")) {
+    return "You MUST respond in Chinese (Simplified).";
+  }
+  if (locale.startsWith("en")) {
+    return "You MUST respond in English.";
+  }
+  return `You MUST respond in the language matching locale: ${locale}.`;
+}
+
+function errorResponse(message: string, status: number): Response {
+  const errorSSE = `event: error\ndata: ${JSON.stringify({
+    type: "error",
+    error: { type: "api_error", message },
+  })}\n\n`;
+  return new Response(errorSSE, {
+    status,
+    headers: { ...corsHeaders, ...securityHeaders, "Content-Type": "text/event-stream" },
+  });
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: { ...corsHeaders, ...securityHeaders } });
   }
 
   try {
@@ -81,51 +257,107 @@ Deno.serve(async (req) => {
       throw new Error("AI_API_TOKEN is not configured");
     }
 
-    const { messages, model, system, enable_web_search } = await req.json();
+    // Parse and validate request body
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse("Invalid JSON body", 400);
+    }
 
-    const body: Record<string, unknown> = {
-      model: model || "anthropic/claude-sonnet-4.5",
+    const { messages, model, system, enable_web_search, locale } = body as {
+      messages: Array<{ role: string; content: string }>;
+      model?: string;
+      system?: string;
+      enable_web_search?: boolean;
+      locale?: string;
+    };
+
+    // Validate messages
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return errorResponse("messages must be a non-empty array", 400);
+    }
+    if (messages.length > MAX_MESSAGES) {
+      return errorResponse(`Too many messages (max ${MAX_MESSAGES})`, 400);
+    }
+    for (const msg of messages) {
+      if (!msg.role || !msg.content) {
+        return errorResponse("Each message must have role and content", 400);
+      }
+      if (!["user", "assistant", "system"].includes(msg.role)) {
+        return errorResponse(`Invalid message role: ${msg.role}`, 400);
+      }
+      if (typeof msg.content !== "string" || msg.content.length > MAX_MESSAGE_LENGTH) {
+        return errorResponse(`Message content exceeds max length of ${MAX_MESSAGE_LENGTH}`, 400);
+      }
+    }
+
+    // Validate and sanitize model
+    const safeModel = (typeof model === "string" && ALLOWED_MODELS.has(model))
+      ? model
+      : DEFAULT_MODEL;
+
+    // Validate system prompt length
+    if (system && typeof system === "string" && system.length > MAX_SYSTEM_LENGTH) {
+      return errorResponse(`System prompt exceeds max length of ${MAX_SYSTEM_LENGTH}`, 400);
+    }
+
+    // Build system prompt: user-provided system + language instruction + search context
+    const parts: string[] = [];
+
+    if (system && typeof system === "string") {
+      parts.push(system);
+    }
+
+    const langInstruction = getLanguageInstruction(typeof locale === "string" ? locale : undefined);
+    if (langInstruction) {
+      parts.push(langInstruction);
+    }
+
+    let searchResults: SearchResult[] = [];
+
+    if (enable_web_search === true) {
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+      if (lastUserMsg) {
+        searchResults = await webSearch(lastUserMsg.content);
+        const searchCtx = buildSearchContext(searchResults);
+        if (searchCtx) {
+          parts.push(searchCtx);
+          parts.push("IMPORTANT: You have access to the web search results above. Use them to provide accurate, up-to-date information. Always cite your sources by mentioning the source URL. Do NOT say you cannot access the internet or search the web — you already have the search results.");
+        } else {
+          parts.push("Note: A web search was attempted for the user's query but returned no results. Please answer based on your knowledge and let the user know the search returned no results.");
+        }
+      }
+    }
+
+    const finalSystem = parts.join("\n\n");
+
+    const requestBody: Record<string, unknown> = {
+      model: safeModel,
       messages,
       stream: true,
       max_tokens: 4096,
     };
 
-    if (system) {
-      body.system = system;
+    if (finalSystem) {
+      requestBody.system = finalSystem;
     }
 
-    // Add web search tool if enabled
-    if (enable_web_search) {
-      body.tools = [{
-        name: "web_search",
-        description: "Search the web for current information, recent events, news, or data not in your training data. Returns a list of relevant web pages with titles, URLs, and snippets. Use this when the user asks about current events, recent information, real-time data, or specific facts you're unsure about.",
-        input_schema: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "The search query. Be specific and include relevant keywords."
-            }
-          },
-          required: ["query"]
-        }
-      }];
-    }
+    console.log(`[ai-chat] model=${safeModel} web_search=${!!enable_web_search} search_results=${searchResults.length} system_len=${finalSystem.length}`);
 
-    const response = await fetch("https://api.enter.pro/code/api/v1/ai/messages", {
+    const response = await fetch(AI_API_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${AI_API_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const text = await response.text();
       let errorMessage = "AI service error";
       let errorCode = "api_error";
-      
       const dataMatch = text.match(/data: (.+)/);
       if (dataMatch) {
         try {
@@ -134,247 +366,54 @@ Deno.serve(async (req) => {
           errorCode = errorData.error?.type || errorCode;
         } catch { /* use defaults */ }
       }
-      
       const errorSSE = `event: error\ndata: ${JSON.stringify({
         type: "error",
-        error: { type: errorCode, message: errorMessage }
+        error: { type: errorCode, message: errorMessage },
       })}\n\n`;
-      
       return new Response(errorSSE, {
         status: response.status,
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" }
+        headers: { ...corsHeaders, ...securityHeaders, "Content-Type": "text/event-stream" },
       });
     }
 
-    // If web search is not enabled, just stream the response
-    if (!enable_web_search) {
-      return new Response(response.body, {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
+    const responseHeaders = {
+      ...corsHeaders,
+      ...securityHeaders,
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+    };
+
+    if (searchResults.length > 0) {
+      const searchEvent = `event: search_results\ndata: ${JSON.stringify({
+        type: "search_results",
+        results: searchResults,
+      })}\n\n`;
+      const encoder = new TextEncoder();
+      const searchChunk = encoder.encode(searchEvent);
+      const upstreamBody = response.body!;
+      const readable = new ReadableStream({
+        async start(controller) {
+          controller.enqueue(searchChunk);
+          const reader = upstreamBody.getReader();
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              controller.enqueue(value);
+            }
+          } catch (e) {
+            console.error("[stream] read error:", e);
+          } finally {
+            controller.close();
+          }
         },
       });
+      return new Response(readable, { headers: responseHeaders });
     }
 
-    // Handle tool use - need to process the stream
-    const reader = response.body?.getReader();
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    if (!reader) {
-      throw new Error("No response body");
-    }
-
-    const stream = new ReadableStream({
-      async start(controller) {
-        let buffer = "";
-        let toolUses: ToolUse[] = [];
-        let stopReason = "";
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
-
-            for (const line of lines) {
-              if (!line.trim() || line.startsWith(":")) continue;
-
-              const dataMatch = line.match(/^data: (.+)$/);
-              if (!dataMatch) continue;
-
-              try {
-                const data = JSON.parse(dataMatch[1]);
-
-                // Forward the event to client
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-
-                // Check for tool use
-                if (data.type === "content_block_start" && data.content_block?.type === "tool_use") {
-                  toolUses.push({
-                    id: data.content_block.id,
-                    name: data.content_block.name,
-                    input: {}
-                  });
-                }
-
-                if (data.type === "content_block_delta" && data.delta?.type === "input_json_delta") {
-                  const lastTool = toolUses[toolUses.length - 1];
-                  if (lastTool) {
-                    const inputStr = JSON.stringify(lastTool.input) + (data.delta.partial_json || "");
-                    try {
-                      lastTool.input = JSON.parse(inputStr);
-                    } catch {
-                      // Partial JSON, will complete later
-                    }
-                  }
-                }
-
-                if (data.type === "message_stop") {
-                  stopReason = data.stop_reason || "";
-                }
-              } catch (e) {
-                console.error("Error parsing SSE data:", e);
-              }
-            }
-          }
-
-          // If AI wants to use tools, execute them
-          if (toolUses.length > 0 && stopReason === "tool_use") {
-            for (const toolUse of toolUses) {
-              if (toolUse.name === "web_search") {
-                const query = toolUse.input.query as string;
-                
-                // Send search status event
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                  type: "search_status",
-                  status: "searching",
-                  query
-                })}\n\n`));
-
-                // Execute search
-                const searchResults = await callWebSearch(query);
-
-                // Send keepalive + status update
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                  type: "search_status",
-                  status: "fetching_content",
-                  query
-                })}\n\n`));
-
-                // Fetch content from top 2 results only (reduced from 3 to speed up)
-                const contents: Array<{ content: string; title: string }> = [];
-                const urlsToFetch = searchResults.slice(0, 2);
-                
-                for (let i = 0; i < urlsToFetch.length; i++) {
-                  // Send progress keepalive before fetch
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                    type: "search_status",
-                    status: "fetching_content",
-                    progress: `${i + 1}/${urlsToFetch.length}`,
-                    url: urlsToFetch[i].url
-                  })}\n\n`));
-                  
-                  const content = await fetchUrlContent(urlsToFetch[i].url);
-                  contents.push(content);
-                  
-                  // Send keepalive after successful fetch
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                    type: "search_status",
-                    status: "fetched",
-                    progress: `${i + 1}/${urlsToFetch.length}`
-                  })}\n\n`));
-                }
-
-                // Build tool result
-                let resultText = `Search results for "${query}":\n\n`;
-                searchResults.forEach((result, idx) => {
-                  resultText += `${idx + 1}. ${result.title}\n`;
-                  resultText += `   URL: ${result.url}\n`;
-                  resultText += `   ${result.snippet}\n\n`;
-                });
-
-                if (contents.some(c => c.content)) {
-                  resultText += "\nDetailed content from top results:\n\n";
-                  contents.forEach((content, idx) => {
-                    if (content.content) {
-                      const truncated = content.content.slice(0, 3000);
-                      resultText += `--- Content from ${searchResults[idx].title} ---\n${truncated}\n\n`;
-                    }
-                  });
-                }
-
-                // Send sources to client
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                  type: "search_results",
-                  results: searchResults
-                })}\n\n`));
-
-                // Continue conversation with tool result
-                const continueMessages = [
-                  ...messages,
-                  {
-                    role: "assistant",
-                    content: [{
-                      type: "tool_use",
-                      id: toolUse.id,
-                      name: "web_search",
-                      input: toolUse.input
-                    }]
-                  },
-                  {
-                    role: "user",
-                    content: [{
-                      type: "tool_result",
-                      tool_use_id: toolUse.id,
-                      content: resultText
-                    }]
-                  }
-                ];
-
-                const continueBody = {
-                  model: model || "anthropic/claude-sonnet-4.5",
-                  messages: continueMessages,
-                  stream: true,
-                  max_tokens: 4096,
-                  ...(system ? { system } : {}),
-                };
-
-                const continueResponse = await fetch("https://api.enter.pro/code/api/v1/ai/messages", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${AI_API_TOKEN}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(continueBody),
-                });
-
-                // Stream the continued response
-                const continueReader = continueResponse.body?.getReader();
-                if (continueReader) {
-                  while (true) {
-                    const { done, value } = await continueReader.read();
-                    if (done) break;
-                    controller.enqueue(value);
-                  }
-                }
-              }
-            }
-          }
-
-          controller.close();
-        } catch (error) {
-          console.error("Stream processing error:", error);
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-            type: "error",
-            error: { type: "stream_error", message: error.message }
-          })}\n\n`));
-          controller.close();
-        }
-      }
-    });
-
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-      },
-    });
-
+    return new Response(response.body, { headers: responseHeaders });
   } catch (error) {
-    const errorSSE = `event: error\ndata: ${JSON.stringify({
-      type: "error",
-      error: { type: "api_error", message: error.message }
-    })}\n\n`;
-    
-    return new Response(errorSSE, {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" }
-    });
+    console.error("[ai-chat] error:", error);
+    return errorResponse((error as Error).message, 500);
   }
 });

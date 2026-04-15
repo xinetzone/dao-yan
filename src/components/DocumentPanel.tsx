@@ -35,6 +35,17 @@ import {
 import { useDocumentCollections, type DocumentCollection, type Document } from "@/hooks/useDocumentCollections";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { ALLOWED_URL_SCHEMES } from "@/config";
+
+/** Validate that a URL is safe (http/https only, properly formed) */
+function isValidUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw.trim());
+    return ALLOWED_URL_SCHEMES.includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
 
 interface DocumentPanelProps {
   open: boolean;
@@ -169,6 +180,11 @@ export function DocumentPanel({ open, onOpenChange, activeCollectionId, onSelect
 
   const handleAddUrl = async () => {
     if (!urlInput.trim() || !activeCollection) return;
+    // Security: validate URL scheme before sending to backend
+    if (!isValidUrl(urlInput.trim())) {
+      setAddError(t("docs.invalidUrl", "Invalid URL. Only http:// and https:// are allowed."));
+      return;
+    }
     setFetchingUrl(true);
     setAddError("");
     try {
@@ -205,7 +221,7 @@ export function DocumentPanel({ open, onOpenChange, activeCollectionId, onSelect
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="left" className="w-[360px] sm:w-[420px] flex flex-col p-0 gap-0">
+        <SheetContent side="left" className="w-[360px] sm:w-[420px] flex flex-col p-0 gap-0" aria-describedby={undefined}>
           <SheetHeader className="px-5 py-4 border-b shrink-0">
             <div className="flex items-center gap-2">
               {view === "detail" && (

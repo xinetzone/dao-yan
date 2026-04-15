@@ -4,7 +4,7 @@
 
 代码已成功推送到 GitHub！
 
-**仓库地址**：https://github.com/xinetzone/dao-research-assistant
+**仓库地址**：https://github.com/daoApps/dao-yan
 
 ---
 
@@ -22,7 +22,7 @@
 
 ### 1. 访问仓库 ⭐
 
-立即访问：https://github.com/xinetzone/dao-research-assistant
+立即访问：https://github.com/daoApps/dao-yan
 
 你应该看到：
 - ✅ 完整的项目文档（README.md）
@@ -51,11 +51,11 @@ ai, research, dao, cultivation, react, typescript, supabase, claude, i18n, web-s
 
 1. 点击右侧 "Releases" → "Create a new release"
 2. 选择标签：`v1.0.0`
-3. Release title: `v1.0.0 - 道研助手首次发布`
+3. Release title: `v1.0.0 - 道衍首次发布`
 4. 描述：
 
 ```markdown
-# 道研助手 v1.0.0 - 首次发布
+# 道衍 v1.0.0 - 首次发布
 
 ## ✨ 核心特色
 
@@ -90,7 +90,7 @@ MIT License - 详见 [LICENSE](./LICENSE)
 
 ---
 
-**愿道研助手帮助每一位使用者，在信息洪流中找到属于自己的那份宁静与智慧。** 🌟
+**愿道衍帮助每一位使用者，在信息洪流中找到属于自己的那份宁静与智慧。** 🌟
 ```
 
 5. 点击 "Publish release"
@@ -100,16 +100,16 @@ MIT License - 详见 [LICENSE](./LICENSE)
 在 README.md 顶部添加徽章（可选）：
 
 ```markdown
-[![GitHub Stars](https://img.shields.io/github/stars/xinetzone/dao-research-assistant?style=social)](https://github.com/xinetzone/dao-research-assistant)
+[![GitHub Stars](https://img.shields.io/github/stars/daoApps/dao-yan?style=social)](https://github.com/daoApps/dao-yan)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/xinetzone/dao-research-assistant/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/daoApps/dao-yan/releases)
 ```
 
 ### 5. 分享项目 📢
 
 你的项目已经准备好分享了！可以：
 
-- 🐦 Twitter: "刚开源了道研助手 - 融合道家智慧与 AI 技术的研究应用"
+- 🐦 Twitter: "刚开源了道衍 - 融合道家智慧与 AI 技术的研究应用"
 - 💬 微信/朋友圈：分享项目截图和链接
 - 📝 技术博客：写一篇开发历程文章
 - 🌐 社区：在 V2EX、掘金、Reddit 等平台分享
@@ -139,4 +139,4 @@ MIT License - 详见 [LICENSE](./LICENSE)
 3. ✅ 规范的版本管理
 4. ✅ 准备接受社区贡献
 
-**愿道研助手能帮助更多人找到内心的宁静！** 🌟
+**愿道衍能帮助更多人找到内心的宁静！** 🌟

@@ -5,93 +5,93 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 36 33% 95%;
+    --foreground: 20 20% 16%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 36 40% 98%;
+    --card-foreground: 20 20% 16%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 36 40% 98%;
+    --popover-foreground: 20 20% 16%;
 
-    --primary: 222 47% 11%;
+    --primary: 4 78% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 36 20% 90%;
+    --secondary-foreground: 20 20% 30%;
 
-    --muted: 220 13% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 36 15% 90%;
+    --muted-foreground: 20 10% 46%;
 
-    --accent: 204 100% 97%;
-    --accent-foreground: 204 96% 38%;
+    --accent: 45 80% 88%;
+    --accent-foreground: 30 60% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 204 96% 38%;
+    --border: 36 15% 82%;
+    --input: 36 15% 85%;
+    --ring: 4 78% 52%;
 
-    --radius: 0.75rem;
+    --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(204 96% 48%), hsl(204 96% 38%));
-    --shadow-soft: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-large: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --sidebar-background: 36 30% 96%;
+    --sidebar-foreground: 20 20% 16%;
+    --sidebar-primary: 4 78% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 45 60% 92%;
+    --sidebar-accent-foreground: 30 60% 30%;
+    --sidebar-border: 36 15% 85%;
+    --sidebar-ring: 4 78% 52%;
+
+    --shadow-soft: 0 1px 3px 0 hsl(20 20% 16% / 0.06);
+    --shadow-medium: 0 4px 6px -1px hsl(20 20% 16% / 0.08);
+    --shadow-large: 4px 4px 0 hsl(20 20% 16% / 0.08);
+    --shadow-card: 3px 3px 0 hsl(20 20% 16% / 0.06);
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 0 0% 95%;
+    --background: 20 20% 10%;
+    --foreground: 36 20% 90%;
 
-    --card: 217 33% 17%;
-    --card-foreground: 0 0% 95%;
+    --card: 20 18% 14%;
+    --card-foreground: 36 20% 90%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 20 20% 10%;
+    --popover-foreground: 36 20% 90%;
 
-    --primary: 204 96% 48%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 4 78% 58%;
+    --primary-foreground: 20 20% 10%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 20 15% 18%;
+    --secondary-foreground: 36 20% 85%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 20 15% 18%;
+    --muted-foreground: 36 10% 55%;
 
-    --accent: 204 96% 20%;
-    --accent-foreground: 204 96% 88%;
+    --accent: 45 50% 25%;
+    --accent-foreground: 45 80% 85%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 204 96% 48%;
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 20 15% 22%;
+    --input: 20 15% 22%;
+    --ring: 4 78% 58%;
+
+    --sidebar-background: 20 18% 12%;
+    --sidebar-foreground: 36 20% 90%;
+    --sidebar-primary: 4 78% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(204 96% 48%), hsl(204 96% 58%));
+    --sidebar-accent: 20 15% 20%;
+    --sidebar-accent-foreground: 36 20% 85%;
+    --sidebar-border: 20 15% 22%;
+    --sidebar-ring: 4 78% 58%;
+
     --shadow-soft: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-large: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    --shadow-large: 4px 4px 0 rgb(0 0 0 / 0.15);
+    --shadow-card: 3px 3px 0 rgb(0 0 0 / 0.1);
   }
 }
 
@@ -110,4 +110,591 @@ body,
 #root {
   width: 100%;
   height: 100%;
+}
+
+/* ======= Dao Theme: Hand-drawn Scholarly Style ======= */
+
+/* Sketch-style card */
+.dao-card {
+  background: hsl(var(--card));
+  border: 2.5px solid hsl(var(--foreground) / 0.75);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+}
+
+/* Tape decoration at top */
+.dao-tape::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 14px;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 2px;
+  opacity: 0.7;
+  z-index: 1;
+}
+
+/* Yellow tag pill */
+.dao-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  background: hsl(var(--accent));
+  border: 1.5px solid hsl(var(--foreground) / 0.5);
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.dao-tag:hover {
+  background: hsl(45 80% 82%);
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0 hsl(var(--foreground) / 0.1);
+}
+
+.dao-tag:active {
+  transform: translateY(0);
+}
+
+/* Question pill */
+.dao-question {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: hsl(var(--card));
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 8px;
+  font-size: 13px;
+  color: hsl(var(--foreground) / 0.75);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.dao-question:hover {
+  border-color: hsl(var(--foreground) / 0.4);
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+/* Dashed separator */
+.dao-separator {
+  border-top: 2px dashed hsl(var(--foreground) / 0.15);
+}
+
+/* Floating decoration squares */
+@keyframes dao-float {
+  0%, 100% { transform: rotate(12deg) translateY(0); }
+  50% { transform: rotate(12deg) translateY(-12px); }
+}
+
+@keyframes dao-float-reverse {
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(-8deg) translateY(-8px); }
+}
+
+.dao-float-square {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 2px solid hsl(var(--foreground) / 0.1);
+  border-radius: 3px;
+  background: hsl(var(--card) / 0.5);
+  pointer-events: none;
+}
+
+.dao-float-1 {
+  top: 12%;
+  left: 4%;
+  animation: dao-float 6s ease-in-out infinite;
+}
+
+.dao-float-2 {
+  top: 22%;
+  right: 6%;
+  animation: dao-float-reverse 7s ease-in-out infinite;
+  width: 30px;
+  height: 30px;
+}
+
+.dao-float-3 {
+  bottom: 18%;
+  left: 3%;
+  animation: dao-float-reverse 5s ease-in-out infinite;
+  width: 35px;
+  height: 35px;
+}
+
+.dao-float-4 {
+  bottom: 28%;
+  right: 4%;
+  animation: dao-float 8s ease-in-out infinite;
+  width: 25px;
+  height: 25px;
+}
+
+/* ======= Markdown Renderer Styles ======= */
+
+.dao-markdown {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: hsl(var(--foreground));
+  word-break: break-word;
+}
+
+.dao-markdown > *:first-child {
+  margin-top: 0;
+}
+
+.dao-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings */
+.dao-markdown h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px dashed hsl(var(--foreground) / 0.12);
+  color: hsl(var(--foreground));
+  letter-spacing: 0.02em;
+}
+
+.dao-markdown h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.625rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px dashed hsl(var(--foreground) / 0.1);
+  color: hsl(var(--foreground));
+}
+
+.dao-markdown h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.dao-markdown h4,
+.dao-markdown h5,
+.dao-markdown h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.875rem 0 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+/* Paragraphs */
+.dao-markdown p {
+  margin: 0.625rem 0;
+}
+
+/* Lists */
+.dao-markdown ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.dao-markdown ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.dao-markdown li {
+  margin: 0.25rem 0;
+  padding-left: 0.25rem;
+}
+
+.dao-markdown li > ul,
+.dao-markdown li > ol {
+  margin: 0.125rem 0;
+}
+
+.dao-markdown li::marker {
+  color: hsl(var(--primary));
+}
+
+/* Links */
+.dao-md-link {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  border-bottom: 1px solid hsl(var(--primary) / 0.3);
+  transition: all 0.15s ease;
+}
+
+.dao-md-link:hover {
+  border-bottom-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.06);
+}
+
+/* Blockquote */
+.dao-blockquote {
+  margin: 0.75rem 0;
+  padding: 0.625rem 1rem;
+  border-left: 3px solid hsl(var(--primary) / 0.5);
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 0 4px 4px 0;
+  color: hsl(var(--foreground) / 0.85);
+}
+
+.dao-blockquote p {
+  margin: 0.25rem 0;
+}
+
+/* Horizontal rule */
+.dao-markdown hr {
+  margin: 1.25rem 0;
+  border: none;
+  border-top: 2px dashed hsl(var(--foreground) / 0.12);
+}
+
+/* Strong / Bold */
+.dao-markdown strong {
+  font-weight: 650;
+  color: hsl(var(--foreground));
+}
+
+/* Italic */
+.dao-markdown em {
+  font-style: italic;
+  color: hsl(var(--foreground) / 0.9);
+}
+
+/* Strikethrough */
+.dao-markdown del {
+  text-decoration: line-through;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Inline code */
+.dao-inline-code {
+  display: inline;
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 3px;
+  color: hsl(var(--primary));
+  word-break: break-all;
+}
+
+/* Code block container */
+.dao-code-block {
+  margin: 0.75rem 0;
+  border: 1.5px solid hsl(var(--foreground) / 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  background: hsl(var(--foreground) / 0.03);
+}
+
+.dao-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.875rem;
+  background: hsl(var(--foreground) / 0.06);
+  border-bottom: 1px solid hsl(var(--foreground) / 0.08);
+  color: hsl(var(--muted-foreground));
+}
+
+.dao-code-pre {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+
+.dao-code-content {
+  display: block;
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  background: transparent !important;
+  color: hsl(var(--foreground) / 0.9);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.dao-code-pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+.dao-code-pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dao-code-pre::-webkit-scrollbar-thumb {
+  background: hsl(var(--foreground) / 0.15);
+  border-radius: 3px;
+}
+
+/* Table */
+.dao-table-wrap {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  border-radius: 4px;
+  border: 1.5px solid hsl(var(--foreground) / 0.15);
+}
+
+.dao-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.dao-markdown thead {
+  background: hsl(var(--muted) / 0.6);
+}
+
+.dao-markdown th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1.5px solid hsl(var(--foreground) / 0.12);
+  white-space: nowrap;
+}
+
+.dao-markdown td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.7);
+}
+
+.dao-markdown tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dao-markdown tbody tr:hover {
+  background: hsl(var(--muted) / 0.3);
+}
+
+/* Task lists (GFM) */
+.dao-markdown input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: hsl(var(--primary));
+}
+
+/* Images */
+.dao-markdown img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin: 0.75rem 0;
+}
+
+/* ======= Highlight.js theme overrides ======= */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name {
+  color: hsl(var(--primary));
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: hsl(140 50% 38%);
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-title.class_,
+.hljs-title.function_ {
+  color: hsl(30 70% 45%);
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.hljs-number,
+.hljs-literal {
+  color: hsl(270 50% 50%);
+}
+
+.hljs-type,
+.hljs-params {
+  color: hsl(200 50% 45%);
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-built_in,
+.dark .hljs-name {
+  color: hsl(4 78% 68%);
+}
+
+.dark .hljs-string,
+.dark .hljs-attr,
+.dark .hljs-symbol,
+.dark .hljs-bullet,
+.dark .hljs-addition {
+  color: hsl(140 50% 60%);
+}
+
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-title.class_,
+.dark .hljs-title.function_ {
+  color: hsl(35 80% 65%);
+}
+
+.dark .hljs-number,
+.dark .hljs-literal {
+  color: hsl(270 60% 70%);
+}
+
+.dark .hljs-type,
+.dark .hljs-params {
+  color: hsl(200 60% 65%);
+}
+
+/* ======= Cultivation Page: Warm Scholarly Theme ======= */
+
+/* Spirit orb pulse */
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.spirit-orb {
+  animation: orb-pulse 3s ease-in-out infinite;
+}
+
+/* Cultivation card (warm) */
+.cult-card-glow {
+  background: hsl(var(--card));
+  border: 2.5px solid hsl(var(--foreground) / 0.6);
+  border-radius: 4px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Mood selection card (warm) */
+.cult-mood-card {
+  background: hsl(var(--card));
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cult-mood-card:hover {
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--foreground) / 0.25);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+}
+
+.cult-mood-card.selected {
+  border-width: 2px;
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
+  transform: scale(1.02);
+  box-shadow: 0 0 16px hsl(var(--primary) / 0.12);
+}
+
+/* Progress bar (warm) */
+.cult-progress-track {
+  height: 8px;
+  border-radius: 4px;
+  background: hsl(var(--muted));
+  overflow: hidden;
+  position: relative;
+}
+
+.cult-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.cult-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.5));
+  border-radius: 4px;
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* Stat card (warm) */
+.cult-stat {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.cult-stat:hover {
+  background: hsl(var(--secondary));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* CTA button */
+.cult-btn-glow {
+  position: relative;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.cult-btn-glow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.2);
+}
+
+/* Record card (warm) */
+.cult-record {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.cult-record:hover {
+  background: hsl(var(--secondary));
+}
+
+/* Level up animation (warm) */
+@keyframes level-up-glow {
+  0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50% { box-shadow: 0 0 40px 10px hsl(var(--primary) / 0.1); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
+.cult-level-up {
+  animation: level-up-glow 2s ease-out;
 }

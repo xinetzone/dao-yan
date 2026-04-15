@@ -2,32 +2,47 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCultivation } from "@/hooks/useCultivation";
-import { ArrowLeft, Flame, Star, Calendar, TrendingUp, ChevronRight, Sparkles, Loader2, BookOpen, Award } from "lucide-react";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import {
+  ArrowLeft, Flame, Star, Calendar, TrendingUp,
+  ChevronRight, Sparkles, Loader2, BookOpen, Award,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { supabase } from "@/integrations/supabase/client";
+import { AI_CHAT_ENDPOINT, SUPABASE_ANON_KEY } from "@/config";
 
-type ViewState = "home" | "checkin" | "result" | "records" | "tutorial";
+/** Fatal error to stop fetchEventSource auto-retry */
+class FatalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FatalError";
+  }
+}
+
+type SubView = "home" | "checkin" | "result" | "records" | "tutorial";
+type ActiveTab = "checkin" | "guide";
 
 export default function CultivationPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { state, moods, realms, getCurrentRealm, getNextRealm, canCheckInToday, checkIn, completeTutorial, getTutorialCompleted } = useCultivation();
-  
-  const [view, setView] = useState<ViewState>("home");
+  const {
+    state, moods, realms, getCurrentRealm, getNextRealm,
+    canCheckInToday, checkIn, completeTutorial, getTutorialCompleted,
+  } = useCultivation();
+
+  const [activeTab, setActiveTab] = useState<ActiveTab>("checkin");
+  const [view, setView] = useState<SubView>("home");
   const [tutorialStep, setTutorialStep] = useState(0);
-  const [selectedMood, setSelectedMood] = useState<string>("");
-  const [wuWeiScore, setWuWeiScore] = useState<number>(0);
-  const [daoFieldActive, setDaoFieldActive] = useState<boolean>(false);
-  const [insight, setInsight] = useState<string>("");
-  const [aiGuidance, setAiGuidance] = useState<string>("");
+  const [selectedMood, setSelectedMood] = useState("");
+  const [wuWeiScore, setWuWeiScore] = useState(0);
+  const [daoFieldActive, setDaoFieldActive] = useState(false);
+  const [insight, setInsight] = useState("");
+  const [aiGuidance, setAiGuidance] = useState("");
   const [isLoadingAI, setIsLoadingAI] = useState(false);
-  const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  const [earnedPoints, setEarnedPoints] = useState(0);
   const [previousRealm, setPreviousRealm] = useState(getCurrentRealm().id);
   const [fromTutorial, setFromTutorial] = useState(false);
 
@@ -36,58 +51,23 @@ export default function CultivationPage() {
   const canCheckIn = canCheckInToday();
   const isZh = i18n.language === "zh-CN";
 
-  // Tutorial steps definition
   const TUTORIAL_STEPS = [
-    {
-      step: 0,
-      icon: "sparkles",
-      title: t("cultivation.tutorial.welcome"),
-      content: t("cultivation.tutorial.welcomeContent"),
-    },
-    {
-      step: 1,
-      icon: "flame",
-      title: t("cultivation.tutorial.realms"),
-      content: t("cultivation.tutorial.realmsContent"),
-      showRealms: true,
-    },
-    {
-      step: 2,
-      icon: "star",
-      title: t("cultivation.tutorial.moods"),
-      content: t("cultivation.tutorial.moodsContent"),
-      showMoods: true,
-    },
-    {
-      step: 3,
-      icon: "checkin",
-      title: t("cultivation.tutorial.firstCheckIn"),
-      content: t("cultivation.tutorial.firstCheckInContent"),
-      action: "startCheckIn",
-    },
-    {
-      step: 4,
-      icon: "award",
-      title: t("cultivation.tutorial.gift"),
-      content: t("cultivation.tutorial.giftContent"),
-      showReward: true,
-      rewardPoints: 50,
-    },
+    { icon: "sparkles", title: t("cultivation.tutorial.welcome"), content: t("cultivation.tutorial.welcomeContent") },
+    { icon: "flame", title: t("cultivation.tutorial.realms"), content: t("cultivation.tutorial.realmsContent"), showRealms: true },
+    { icon: "star", title: t("cultivation.tutorial.moods"), content: t("cultivation.tutorial.moodsContent"), showMoods: true },
+    { icon: "checkin", title: t("cultivation.tutorial.firstCheckIn"), content: t("cultivation.tutorial.firstCheckInContent"), action: "startCheckIn" },
+    { icon: "award", title: t("cultivation.tutorial.gift"), content: t("cultivation.tutorial.giftContent"), showReward: true, rewardPoints: 50 },
   ];
 
   const currentTutorialStep = TUTORIAL_STEPS[tutorialStep] || TUTORIAL_STEPS[0];
-
   const progressPercent = nextRealm
     ? ((state.enlightenmentPoints - currentRealm.minEP) / (nextRealm.minEP - currentRealm.minEP)) * 100
     : 100;
 
-  // URL parameter handling for tutorial
   useEffect(() => {
-    const shouldShowTutorial = searchParams.get('tutorial') === 'true';
-    if (shouldShowTutorial && !getTutorialCompleted()) {
+    if (searchParams.get("tutorial") === "true" && !getTutorialCompleted()) {
       setView("tutorial");
       setTutorialStep(0);
-      // Clean URL
       setSearchParams({});
     }
   }, [searchParams, getTutorialCompleted, setSearchParams]);
@@ -102,587 +82,658 @@ export default function CultivationPage() {
 
   const handleSubmitCheckIn = useCallback(async () => {
     if (!selectedMood) return;
-    
     setIsLoadingAI(true);
     setPreviousRealm(currentRealm.id);
-    
-    const moodInfo = moods.find(m => m.id === selectedMood);
+
+    const moodInfo = moods.find((m) => m.id === selectedMood);
     const prompt = `今日修行：心境${isZh ? moodInfo?.name : moodInfo?.nameEn}，无为指数${wuWeiScore}/5，道场感应${daoFieldActive ? "开启" : "未开"}。心言：${insight || "无"}`;
+
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 30000);
 
     try {
       let fullGuidance = "";
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      await fetchEventSource(`${supabase.supabaseUrl}/functions/v1/ai-chat-167c2bc1450e`, {
+      await fetchEventSource(AI_CHAT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabase.supabaseAnonKey}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages: [{ role: "user", content: prompt }],
           model: "anthropic/claude-sonnet-4.5",
-          system: `你是一位通晓帛书版《道德经》、佛家「直心如如不动」以及万物理论的高阶仙师。根据修行者的今日状态，给予：
+          locale: i18n.language,
+          system: `你是道衍，一位通晓帛书版《道德经》、佛家「直心如如不动」以及ψ=ψ(ψ)万物理论的智慧镜子。请映照修行者的今日状态，给予：
 1. 帛书道德经原文引用（一句）
 2. 佛家直心观的点评
-3. 从量子场论/万物理论的宇宙视角启发
+3. 从ψ=ψ(ψ)万物理论（崩塌动力学、意识自显）的宇宙视角启发
 
 回应需在200字内，语言古雅诗意，蕴含深刻启迪。${isZh ? "" : "Please respond in English with poetic wisdom."}`,
         }),
-        
+        signal: abortController.signal,
+        openWhenHidden: true,
         async onopen(response) {
-          if (!response.ok) {
-            throw new Error(`Request failed: ${response.status}`);
-          }
+          if (!response.ok) throw new FatalError(`Request failed: ${response.status}`);
         },
-        
         onmessage(event) {
           if (!event.data) return;
-          const data = JSON.parse(event.data);
-          
+          let data;
+          try { data = JSON.parse(event.data); } catch { return; }
           if (data.type === "content_block_delta" && data.delta?.text) {
             fullGuidance += data.delta.text;
           }
         },
-        
         onerror(err) {
-          throw err;
+          if (err instanceof FatalError) throw err;
+          throw new FatalError(err?.message || "Connection lost");
         },
       });
 
+      clearTimeout(timeoutId);
       const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fullGuidance);
       setEarnedPoints(points);
       setAiGuidance(fullGuidance);
-      
-      // If from tutorial, go to tutorial gift step
-      if (fromTutorial) {
-        setView("tutorial");
-        setTutorialStep(4);
-        setFromTutorial(false);
-      } else {
-        setView("result");
-      }
+      if (fromTutorial) { setView("tutorial"); setTutorialStep(4); setFromTutorial(false); }
+      else setView("result");
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error("AI guidance failed:", error);
-      const fallbackGuidance = isZh
-        ? "道可道，非常道。心若止水，万物自明。量子纠缠，亦如因果轮回。持之以恒，终见本源。"
+      const fallback = isZh
+        ? "道可道，非恒道。心若止水，万物自明。量子纠缠，亦如因果轮回。持之以恒，终见本源。"
         : "The Dao that can be told is not the eternal Dao. A still mind reflects all. Quantum entanglement mirrors karmic cycles. Persist, and you shall see the source.";
-      const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallbackGuidance);
+      const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallback);
       setEarnedPoints(points);
-      setAiGuidance(fallbackGuidance);
-      
-      if (fromTutorial) {
-        setView("tutorial");
-        setTutorialStep(4);
-        setFromTutorial(false);
-      } else {
-        setView("result");
-      }
+      setAiGuidance(fallback);
+      if (fromTutorial) { setView("tutorial"); setTutorialStep(4); setFromTutorial(false); }
+      else setView("result");
     } finally {
       setIsLoadingAI(false);
     }
-  }, [selectedMood, wuWeiScore, daoFieldActive, insight, checkIn, currentRealm.id, moods, isZh, fromTutorial]);
+  }, [selectedMood, wuWeiScore, daoFieldActive, insight, checkIn, currentRealm.id, moods, isZh, fromTutorial, i18n.language]);
 
   const hasLeveledUp = getCurrentRealm().id > previousRealm;
 
   const handleTutorialNext = () => {
-    if (tutorialStep === 3) {
-      // Go to check-in
-      setFromTutorial(true);
-      handleCheckInStart();
-    } else if (tutorialStep === 4) {
-      // Complete tutorial and give reward
-      completeTutorial();
-      setView("home");
-    } else if (tutorialStep < TUTORIAL_STEPS.length - 1) {
-      setTutorialStep(tutorialStep + 1);
-    }
+    if (tutorialStep === 3) { setFromTutorial(true); handleCheckInStart(); }
+    else if (tutorialStep === 4) { completeTutorial(); setView("home"); }
+    else if (tutorialStep < TUTORIAL_STEPS.length - 1) setTutorialStep(tutorialStep + 1);
   };
 
-  const getTutorialIcon = (iconName: string) => {
-    switch (iconName) {
-      case "sparkles":
-        return <Sparkles className="h-10 w-10" style={{ color: currentRealm.color }} />;
-      case "flame":
-        return <Flame className="h-10 w-10" style={{ color: currentRealm.color }} />;
-      case "star":
-        return <Star className="h-10 w-10" style={{ color: currentRealm.color }} />;
-      case "checkin":
-        return <BookOpen className="h-10 w-10" style={{ color: currentRealm.color }} />;
-      case "award":
-        return <Award className="h-10 w-10" style={{ color: currentRealm.color }} />;
-      default:
-        return <Sparkles className="h-10 w-10" style={{ color: currentRealm.color }} />;
-    }
+  const iconMap: Record<string, React.ReactNode> = {
+    sparkles: <Sparkles className="h-10 w-10" />,
+    flame: <Flame className="h-10 w-10" />,
+    star: <Star className="h-10 w-10" />,
+    checkin: <BookOpen className="h-10 w-10" />,
+    award: <Award className="h-10 w-10" />,
   };
+
+  // Whether to show back-to-home in header (inside checkin sub-views)
+  const showSubViewBack = view === "checkin" || view === "result" || view === "records";
 
   return (
-    <div className="min-h-screen bg-[#060a14] text-white relative overflow-hidden">
-      {/* Starfield background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="stars-small"></div>
-        <div className="stars-medium"></div>
-        <div className="stars-large"></div>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="relative max-w-2xl mx-auto px-4 py-4 sm:py-6 pb-12">
+        {/* Floating decoration */}
+        <div className="dao-float-square dao-float-1 hidden sm:block" />
+        <div className="dao-float-square dao-float-2 hidden sm:block" />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-5 sm:mb-6">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => view === "home" ? navigate("/") : view === "tutorial" ? setView("home") : setView("home")}
-            className="text-white/70 hover:text-white hover:bg-white/10 transition-all gap-1.5 px-2.5 sm:px-3 min-h-[32px] sm:min-h-[36px]"
+            onClick={() => {
+              if (showSubViewBack) { setView("home"); }
+              else navigate("/");
+            }}
+            className="text-muted-foreground hover:text-foreground gap-1.5 px-2.5"
           >
-            <ArrowLeft className="h-4 w-4 sm:h-[18px] sm:w-[18px] shrink-0" />
-            <span className="hidden sm:inline whitespace-nowrap">
-              {view === "home" ? (isZh ? "返回" : "Back") : (isZh ? "主界面" : "Home")}
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {showSubViewBack ? (isZh ? "主界面" : "Home") : (isZh ? "返回" : "Back")}
             </span>
           </Button>
-          <h1 className="text-base sm:text-xl font-bold tracking-wider text-center flex-1 mx-2">
+          <h1 className="text-base sm:text-lg font-bold tracking-wider text-center flex-1 mx-2">
             {isZh ? "今天你用心了嘛？" : "Did You Cultivate Today?"}
           </h1>
-          <div className="w-[72px] sm:w-20"></div>
+          <div className="w-16" />
         </div>
 
-        {/* Home View */}
-        {view === "home" && (
-          <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Spirit Orb */}
-            <div className="flex flex-col items-center space-y-6">
-              <div
-                className="relative w-48 h-48 rounded-full flex items-center justify-center animate-pulse"
-                style={{
-                  background: `radial-gradient(circle, ${currentRealm.color}40, transparent)`,
-                  boxShadow: `0 0 60px ${currentRealm.color}60, inset 0 0 40px ${currentRealm.color}30`,
-                }}
+        {/* ========== TAB BAR (shown when not in sub-views) ========== */}
+        {!showSubViewBack && view !== "tutorial" && (
+          <div className="flex rounded-xl border border-border bg-muted/40 p-1 mb-6 gap-1">
+            {(["checkin", "guide"] as ActiveTab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+                style={
+                  activeTab === tab
+                    ? {
+                        background: `linear-gradient(135deg, ${currentRealm.color}cc, ${currentRealm.color}88)`,
+                        color: "#fff",
+                        boxShadow: `0 2px 8px ${currentRealm.color}30`,
+                      }
+                    : { color: "hsl(var(--muted-foreground))" }
+                }
               >
-                <Flame className="h-24 w-24" style={{ color: currentRealm.color }} />
-              </div>
-              
-              <div className="text-center space-y-2">
-                <h2 className="text-4xl font-bold tracking-widest" style={{ color: currentRealm.color }}>
-                  {isZh ? currentRealm.name : currentRealm.nameEn}
-                </h2>
-                <p className="text-lg text-white/60 tracking-wide">
-                  {isZh ? currentRealm.description : currentRealm.descriptionEn}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress */}
-            <Card className="bg-white/5 border-white/10 p-6 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-white/60">{isZh ? "悟道点" : "Enlightenment"}</span>
-                <span className="text-2xl font-bold">{state.enlightenmentPoints.toLocaleString()}</span>
-              </div>
-              
-              {nextRealm && (
-                <>
-                  <Progress value={progressPercent} className="h-2" />
-                  <div className="flex justify-between text-sm text-white/60">
-                    <span>{isZh ? "当前" : "Current"}: {currentRealm.minEP.toLocaleString()}</span>
-                    <span>{isZh ? "下阶" : "Next"}: {nextRealm.minEP.toLocaleString()}</span>
-                  </div>
-                </>
-              )}
-            </Card>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <Card className="bg-white/5 border-white/10 p-4 text-center space-y-2">
-                <Calendar className="h-6 w-6 mx-auto text-white/60" />
-                <div className="text-2xl font-bold">{state.totalCheckIns}</div>
-                <div className="text-xs text-white/60">{isZh ? "总打卡" : "Total"}</div>
-              </Card>
-              <Card className="bg-white/5 border-white/10 p-4 text-center space-y-2">
-                <TrendingUp className="h-6 w-6 mx-auto text-white/60" />
-                <div className="text-2xl font-bold">{state.checkInStreak}</div>
-                <div className="text-xs text-white/60">{isZh ? "连续天" : "Streak"}</div>
-              </Card>
-              <Card className="bg-white/5 border-white/10 p-4 text-center space-y-2">
-                <Sparkles className="h-6 w-6 mx-auto text-white/60" />
-                <div className="text-2xl font-bold">{state.enlightenmentPoints}</div>
-                <div className="text-xs text-white/60">{isZh ? "悟道点" : "EP"}</div>
-              </Card>
-            </div>
-
-            {/* Actions */}
-            <div className="space-y-3">
-              <Button
-                size="lg"
-                className="w-full h-14 text-lg"
-                style={{
-                  background: canCheckIn
-                    ? `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}dd)`
-                    : "rgba(255,255,255,0.1)",
-                }}
-                onClick={handleCheckInStart}
-                disabled={!canCheckIn}
-              >
-                <Flame className="h-5 w-5 mr-2" />
-                {canCheckIn ? (isZh ? "今日打卡" : "Check In Today") : (isZh ? "已完成今日修行" : "Completed Today")}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-white/20 hover:bg-white/10"
-                onClick={() => setView("records")}
-              >
-                {isZh ? "修行记录" : "Cultivation Records"}
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
+                {tab === "checkin"
+                  ? (isZh ? "修行打卡" : "Check-In")
+                  : (isZh ? "修炼指南" : "Guide")}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Check-in View */}
-        {view === "checkin" && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            <Card className="bg-white/5 border-white/10 p-6 space-y-6">
-              {/* Step 1: Mood */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{isZh ? "一、今日心境" : "1. Today's Mood"}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {moods.map(mood => (
-                    <button
-                      key={mood.id}
-                      onClick={() => setSelectedMood(mood.id)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        selectedMood === mood.id
-                          ? "border-primary bg-primary/20 scale-105"
-                          : "border-white/20 hover:border-white/40 bg-white/5"
-                      }`}
-                    >
-                      <div className="font-semibold">{isZh ? mood.name : mood.nameEn}</div>
-                      <div className="text-xs text-white/60 mt-1">{isZh ? mood.description : mood.descriptionEn}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Wu Wei Score */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{isZh ? "二、无为指数" : "2. Wu Wei Index"}</h3>
-                <div className="flex justify-center gap-3">
-                  {[1, 2, 3, 4, 5].map(score => (
-                    <button
-                      key={score}
-                      onClick={() => setWuWeiScore(score)}
-                      className={`transition-all ${wuWeiScore >= score ? "scale-110" : "opacity-40 hover:opacity-70"}`}
-                    >
-                      <Star
-                        className="h-10 w-10"
-                        fill={wuWeiScore >= score ? currentRealm.color : "none"}
-                        color={currentRealm.color}
-                      />
-                    </button>
-                  ))}
-                </div>
-                <p className="text-center text-sm text-white/60">
-                  {isZh ? "无为而无不为，率性而为" : "Act without action, all is accomplished"}
-                </p>
-              </div>
-
-              {/* Step 3: Dao Field */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{isZh ? "三、道场感应" : "3. Dao Field"}</h3>
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    onClick={() => setDaoFieldActive(!daoFieldActive)}
-                    className={`px-8 py-3 rounded-full border-2 transition-all ${
-                      daoFieldActive
-                        ? `border-[${currentRealm.color}] bg-[${currentRealm.color}]/20`
-                        : "border-white/20 bg-white/5"
-                    }`}
-                  >
-                    {daoFieldActive ? (isZh ? "已开启" : "Active") : (isZh ? "未开" : "Inactive")}
-                  </button>
-                </div>
-                <p className="text-center text-sm text-white/60">
-                  {isZh ? "感应天地灵气，与万物共振" : "Sense the cosmic energy"}
-                </p>
-              </div>
-
-              {/* Step 4: Insight */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">{isZh ? "四、心言自述" : "4. Inner Reflection"}</h3>
-                <Textarea
-                  value={insight}
-                  onChange={e => setInsight(e.target.value)}
-                  placeholder={isZh ? "今日所感所悟（选填）" : "Today's insights (optional)"}
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/40 min-h-24"
-                />
-              </div>
-
-              {/* Submit */}
-              <Button
-                size="lg"
-                className="w-full"
-                style={{
-                  background: selectedMood ? `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}dd)` : undefined,
-                }}
-                onClick={handleSubmitCheckIn}
-                disabled={!selectedMood || isLoadingAI}
-              >
-                {isLoadingAI ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    {isZh ? "仙师正在感应天机..." : "Master is sensing..."}
-                  </>
-                ) : (
-                  <>{isZh ? "提交修行" : "Submit"}</>
-                )}
-              </Button>
-            </Card>
-          </div>
-        )}
-
-        {/* Result View */}
-        {view === "result" && (
-          <div className="space-y-6 animate-in fade-in duration-700">
-            <Card className="bg-white/5 border-white/10 p-8 text-center space-y-6">
-              <div className="text-6xl font-bold animate-in zoom-in duration-500" style={{ color: currentRealm.color }}>
-                +{earnedPoints}
-              </div>
-              <div className="text-xl text-white/80">{isZh ? "悟道点" : "Enlightenment Points"}</div>
-              
-              {hasLeveledUp && (
-                <div className="animate-in slide-in-from-bottom duration-700">
-                  <Badge className="text-lg px-6 py-2" style={{ background: currentRealm.color }}>
-                    {isZh ? "突破！" : "Breakthrough!"} {isZh ? currentRealm.name : currentRealm.nameEn}
-                  </Badge>
-                </div>
-              )}
-            </Card>
-
-            <Card className="bg-white/5 border-white/10 p-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" style={{ color: currentRealm.color }} />
-                <h3 className="text-lg font-semibold">{isZh ? "仙师点拨" : "Master's Guidance"}</h3>
-              </div>
-              <p className="text-white/90 leading-relaxed whitespace-pre-wrap">{aiGuidance}</p>
-            </Card>
-
-            <Button size="lg" className="w-full" onClick={() => setView("home")}>
-              {isZh ? "返回主界面" : "Return Home"}
-            </Button>
-          </div>
-        )}
-
-        {/* Records View */}
-        {view === "records" && (
-          <div className="space-y-4 animate-in fade-in duration-500">
-            <h2 className="text-2xl font-bold mb-4">{isZh ? "修行记录" : "Records"}</h2>
-            {state.records.length === 0 ? (
-              <Card className="bg-white/5 border-white/10 p-8 text-center text-white/60">
-                {isZh ? "尚无修行记录" : "No records yet"}
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {state.records.slice(0, 30).map((record, index) => {
-                  const mood = moods.find(m => m.id === record.mood);
-                  return (
-                    <Card key={index} className="bg-white/5 border-white/10 p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                          <div className="text-sm text-white/60">{new Date(record.date).toLocaleDateString()}</div>
-                          <Badge variant="outline" className="border-white/30">
-                            {isZh ? mood?.name : mood?.nameEn}
-                          </Badge>
-                        </div>
-                        <div className="text-lg font-bold" style={{ color: currentRealm.color }}>
-                          +{record.pointsEarned}
-                        </div>
-                      </div>
-                      {record.aiGuidance && (
-                        <details className="text-sm text-white/70">
-                          <summary className="cursor-pointer hover:text-white">{isZh ? "查看点拨" : "View Guidance"}</summary>
-                          <p className="mt-2 pl-4 border-l-2 border-white/20">{record.aiGuidance}</p>
-                        </details>
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tutorial View */}
+        {/* ========== TUTORIAL VIEW (triggered by URL param) ========== */}
         {view === "tutorial" && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Progress Indicator */}
+          <div className="space-y-5 animate-in fade-in duration-500">
             <div className="flex justify-center gap-2">
               {TUTORIAL_STEPS.map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === tutorialStep
-                      ? "w-8"
-                      : idx < tutorialStep
-                      ? "w-2 opacity-60"
-                      : "w-2 opacity-30"
-                  }`}
+                  className="h-1.5 rounded-full transition-all duration-300"
                   style={{
-                    backgroundColor: idx <= tutorialStep ? currentRealm.color : "rgba(255,255,255,0.3)"
+                    width: idx === tutorialStep ? 32 : 8,
+                    backgroundColor: idx <= tutorialStep ? currentRealm.color : "hsl(var(--border))",
+                    opacity: idx <= tutorialStep ? 1 : 0.5,
                   }}
                 />
               ))}
             </div>
 
-            {/* Tutorial Content Card */}
-            <Card className="bg-white/5 border-white/10 p-8 space-y-6">
-              {/* Icon */}
+            <div className="cult-card-glow p-6 sm:p-8 space-y-6">
               <div className="flex justify-center">
                 <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center"
+                  className="w-20 h-20 rounded-full flex items-center justify-center border-2"
                   style={{
-                    background: `radial-gradient(circle, ${currentRealm.color}30, transparent)`,
-                    boxShadow: `0 0 30px ${currentRealm.color}40`,
+                    borderColor: `${currentRealm.color}30`,
+                    background: `radial-gradient(circle, ${currentRealm.color}15, transparent)`,
+                    color: currentRealm.color,
                   }}
                 >
-                  {getTutorialIcon(currentTutorialStep.icon)}
+                  {iconMap[currentTutorialStep.icon] || <Sparkles className="h-10 w-10" />}
                 </div>
               </div>
-
-              {/* Title */}
-              <h2 className="text-2xl font-bold text-center">
-                {currentTutorialStep.title}
-              </h2>
-
-              {/* Content */}
-              <p className="text-white/80 leading-relaxed whitespace-pre-line text-center px-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-center">{currentTutorialStep.title}</h2>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-center text-sm px-2">
                 {currentTutorialStep.content}
               </p>
 
-              {/* Realms Display */}
               {currentTutorialStep.showRealms && (
-                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
                   {realms.map((realm) => (
-                    <div
-                      key={realm.id}
-                      className="p-4 rounded-lg border-2 bg-white/5 text-left"
-                      style={{ borderColor: `${realm.color}40` }}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Flame className="h-5 w-5" style={{ color: realm.color }} />
-                        <div className="font-bold" style={{ color: realm.color }}>
+                    <div key={realm.id} className="cult-mood-card" style={{ borderColor: `${realm.color}25` }}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Flame className="h-4 w-4" style={{ color: realm.color }} />
+                        <span className="font-bold text-sm" style={{ color: realm.color }}>
                           {isZh ? realm.name : realm.nameEn}
-                        </div>
+                        </span>
                       </div>
-                      <div className="text-xs text-white/60 mb-1">
-                        {isZh ? realm.description : realm.descriptionEn}
-                      </div>
-                      <div className="text-xs text-white/40">
-                        {realm.minEP.toLocaleString()} EP
-                      </div>
+                      <div className="text-[11px] text-muted-foreground">{isZh ? realm.description : realm.descriptionEn}</div>
+                      <div className="text-[11px] text-muted-foreground/60 mt-1">{realm.minEP.toLocaleString()} EP</div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Moods Display */}
               {currentTutorialStep.showMoods && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {moods.map((mood) => (
-                    <div
-                      key={mood.id}
-                      className="p-4 rounded-lg border-2 border-white/20 bg-white/5 text-left"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Star className="h-5 w-5" style={{ color: currentRealm.color }} />
-                        <div className="font-bold">
-                          {isZh ? mood.name : mood.nameEn}
-                        </div>
-                        <Badge variant="secondary" className="ml-auto text-xs">
+                    <div key={mood.id} className="cult-mood-card">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Star className="h-4 w-4" style={{ color: currentRealm.color }} />
+                        <span className="font-bold text-sm">{isZh ? mood.name : mood.nameEn}</span>
+                        <span className="ml-auto text-[11px] font-medium" style={{ color: currentRealm.color }}>
                           +{mood.points}
-                        </Badge>
+                        </span>
                       </div>
-                      <div className="text-xs text-white/60">
-                        {isZh ? mood.description : mood.descriptionEn}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{isZh ? mood.description : mood.descriptionEn}</div>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Reward Animation */}
               {currentTutorialStep.showReward && (
-                <div className="text-center space-y-4 py-6">
-                  <div
-                    className="text-6xl font-bold animate-in zoom-in duration-500"
-                    style={{ color: currentRealm.color }}
-                  >
+                <div className="text-center space-y-4 py-4">
+                  <div className="text-5xl font-bold animate-in zoom-in duration-500 tabular-nums" style={{ color: currentRealm.color }}>
                     +{currentTutorialStep.rewardPoints}
                   </div>
-                  <div className="text-xl text-white/80">
+                  <div className="text-base text-muted-foreground">
                     {t("cultivation.tutorial.pointsGifted", { points: currentTutorialStep.rewardPoints })}
                   </div>
-                  <div className="flex justify-center">
-                    <Award className="h-16 w-16 animate-pulse" style={{ color: currentRealm.color }} />
-                  </div>
+                  <Award className="h-14 w-14 mx-auto animate-pulse" style={{ color: currentRealm.color }} />
                 </div>
               )}
 
-              {/* Navigation Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 {tutorialStep > 0 && tutorialStep < 4 && (
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={() => setTutorialStep(tutorialStep - 1)}
-                    className="flex-1 border-white/20 hover:bg-white/10"
+                    className="flex-1 h-11 text-sm border border-border rounded-lg text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-all"
                   >
                     {t("cultivation.tutorial.previous")}
-                  </Button>
+                  </button>
                 )}
-                <Button
+                <button
                   onClick={handleTutorialNext}
-                  className="flex-1"
+                  className="cult-btn-glow flex-1 h-11 text-sm font-medium rounded-lg"
                   style={{
-                    background: `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}dd)`
+                    background: `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}cc)`,
+                    color: "#fff",
                   }}
                 >
                   {tutorialStep === 4
                     ? t("cultivation.tutorial.complete")
                     : currentTutorialStep.action === "startCheckIn"
-                    ? t("cultivation.tutorial.startCheckIn")
-                    : t("cultivation.tutorial.next")}
-                </Button>
+                      ? t("cultivation.tutorial.startCheckIn")
+                      : t("cultivation.tutorial.next")}
+                </button>
               </div>
-            </Card>
+            </div>
           </div>
         )}
-      </div>
 
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-        .stars-small, .stars-medium, .stars-large {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background-image: 
-            radial-gradient(2px 2px at 20px 30px, white, transparent),
-            radial-gradient(2px 2px at 60px 70px, white, transparent),
-            radial-gradient(1px 1px at 50px 50px, white, transparent),
-            radial-gradient(1px 1px at 130px 80px, white, transparent),
-            radial-gradient(2px 2px at 90px 10px, white, transparent);
-          background-repeat: repeat;
-          animation: twinkle 3s infinite;
-        }
-        .stars-medium {
-          background-size: 280px 280px;
-          animation-duration: 4s;
-        }
-        .stars-large {
-          background-size: 380px 380px;
-          animation-duration: 5s;
-        }
-      `}</style>
+        {/* ========== CHECK-IN TAB ========== */}
+        {activeTab === "checkin" && view !== "tutorial" && (
+          <div>
+            {/* --- HOME SUB-VIEW --- */}
+            {view === "home" && (
+              <div className="space-y-7 animate-in fade-in duration-500">
+                <div className="flex flex-col items-center space-y-5">
+                  <div
+                    className="spirit-orb relative w-36 h-36 sm:w-44 sm:h-44 rounded-full flex items-center justify-center border-2"
+                    style={{
+                      borderColor: `${currentRealm.color}40`,
+                      background: `radial-gradient(circle, ${currentRealm.color}15, ${currentRealm.color}05, transparent)`,
+                      boxShadow: `0 0 40px ${currentRealm.color}15`,
+                    }}
+                  >
+                    <Flame className="h-16 w-16 sm:h-20 sm:w-20" style={{ color: currentRealm.color }} />
+                  </div>
+                  <div className="text-center space-y-1.5">
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-widest" style={{ color: currentRealm.color }}>
+                      {isZh ? currentRealm.name : currentRealm.nameEn}
+                    </h2>
+                    <p className="text-sm sm:text-base text-muted-foreground tracking-wide">
+                      {isZh ? currentRealm.description : currentRealm.descriptionEn}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="cult-card-glow p-5 sm:p-6 space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                      {isZh ? "悟道点" : "Enlightenment"}
+                    </span>
+                    <span className="text-2xl font-bold tabular-nums" style={{ color: currentRealm.color }}>
+                      {state.enlightenmentPoints.toLocaleString()}
+                    </span>
+                  </div>
+                  {nextRealm && (
+                    <>
+                      <div className="cult-progress-track">
+                        <div
+                          className="cult-progress-fill"
+                          style={{
+                            width: `${Math.min(progressPercent, 100)}%`,
+                            background: `linear-gradient(90deg, ${currentRealm.color}cc, ${currentRealm.color})`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{isZh ? "当前" : "Current"}: {currentRealm.minEP.toLocaleString()}</span>
+                        <span>{isZh ? "下阶" : "Next"}: {nextRealm.minEP.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { icon: Calendar, value: state.totalCheckIns, label: isZh ? "总打卡" : "Total" },
+                    { icon: TrendingUp, value: state.checkInStreak, label: isZh ? "连续天" : "Streak" },
+                    { icon: Sparkles, value: state.enlightenmentPoints, label: isZh ? "悟道点" : "EP" },
+                  ].map((s) => (
+                    <div key={s.label} className="cult-stat">
+                      <s.icon className="h-5 w-5 mx-auto text-muted-foreground mb-2" />
+                      <div className="text-xl font-bold tabular-nums">{s.value}</div>
+                      <div className="text-[11px] text-muted-foreground mt-1">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  <button
+                    className="cult-btn-glow w-full h-14 text-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      background: canCheckIn
+                        ? `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}cc)`
+                        : "hsl(var(--muted))",
+                      color: canCheckIn ? "#fff" : "hsl(var(--muted-foreground))",
+                    }}
+                    onClick={handleCheckInStart}
+                    disabled={!canCheckIn}
+                  >
+                    <Flame className="h-5 w-5" />
+                    {canCheckIn ? (isZh ? "今日打卡" : "Check In Today") : (isZh ? "已完成今日修行" : "Completed Today")}
+                  </button>
+                  <button
+                    className="w-full h-12 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border hover:border-foreground/20 rounded-lg transition-all"
+                    onClick={() => setView("records")}
+                  >
+                    {isZh ? "修行记录" : "Cultivation Records"}
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* --- CHECK-IN FORM SUB-VIEW --- */}
+            {view === "checkin" && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="cult-card-glow p-5 sm:p-7 space-y-7">
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold">
+                      {isZh ? "一、今日心境" : "1. Today's Mood"}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {moods.map((mood) => (
+                        <button
+                          key={mood.id}
+                          onClick={() => setSelectedMood(mood.id)}
+                          className={`cult-mood-card text-left ${selectedMood === mood.id ? "selected" : ""}`}
+                          style={
+                            selectedMood === mood.id
+                              ? { borderColor: currentRealm.color, boxShadow: `0 0 16px ${currentRealm.color}15` }
+                              : undefined
+                          }
+                        >
+                          <div className="font-semibold text-sm">{isZh ? mood.name : mood.nameEn}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{isZh ? mood.description : mood.descriptionEn}</div>
+                          <div className="text-[11px] mt-2 font-medium" style={{ color: currentRealm.color }}>+{mood.points} EP</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold">
+                      {isZh ? "二、无为指数" : "2. Wu Wei Index"}
+                    </h3>
+                    <div className="flex justify-center gap-3">
+                      {[1, 2, 3, 4, 5].map((score) => (
+                        <button
+                          key={score}
+                          onClick={() => setWuWeiScore(score)}
+                          className="transition-all hover:scale-110"
+                          style={{ opacity: wuWeiScore >= score ? 1 : 0.25 }}
+                        >
+                          <Star
+                            className="h-9 w-9 sm:h-10 sm:w-10"
+                            fill={wuWeiScore >= score ? currentRealm.color : "none"}
+                            color={currentRealm.color}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-center text-xs text-muted-foreground">
+                      {isZh ? "无为而无不为，率性而为" : "Act without action, all is accomplished"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold">
+                      {isZh ? "三、道场感应" : "3. Dao Field"}
+                    </h3>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => setDaoFieldActive(!daoFieldActive)}
+                        className="px-8 py-3 rounded-lg border transition-all text-sm font-medium"
+                        style={{
+                          borderColor: daoFieldActive ? currentRealm.color : "hsl(var(--border))",
+                          background: daoFieldActive ? `${currentRealm.color}12` : "hsl(var(--card))",
+                          color: daoFieldActive ? currentRealm.color : "hsl(var(--muted-foreground))",
+                          boxShadow: daoFieldActive ? `0 0 20px ${currentRealm.color}15` : "none",
+                        }}
+                      >
+                        {daoFieldActive ? (isZh ? "已开启" : "Active") : (isZh ? "点击开启" : "Tap to Activate")}
+                      </button>
+                    </div>
+                    <p className="text-center text-xs text-muted-foreground">
+                      {isZh ? "感应天地灵气，与万物共振" : "Sense the cosmic energy"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold">
+                      {isZh ? "四、心言自述" : "4. Inner Reflection"}
+                    </h3>
+                    <Textarea
+                      value={insight}
+                      onChange={(e) => setInsight(e.target.value)}
+                      placeholder={isZh ? "今日所感所悟（选填）" : "Today's insights (optional)"}
+                      className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-24 rounded-lg focus:border-foreground/25 focus:ring-0 resize-none"
+                    />
+                  </div>
+
+                  <button
+                    className="cult-btn-glow w-full h-13 py-3.5 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg"
+                    style={{
+                      background: selectedMood
+                        ? `linear-gradient(135deg, ${currentRealm.color}, ${currentRealm.color}cc)`
+                        : "hsl(var(--muted))",
+                      color: selectedMood ? "#fff" : "hsl(var(--muted-foreground))",
+                    }}
+                    onClick={handleSubmitCheckIn}
+                    disabled={!selectedMood || isLoadingAI}
+                  >
+                    {isLoadingAI ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        {isZh ? "道衍正在感应..." : "Dao Yan is sensing..."}
+                      </>
+                    ) : (
+                      isZh ? "提交修行" : "Submit"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* --- RESULT SUB-VIEW --- */}
+            {view === "result" && (
+              <div className="space-y-5 animate-in fade-in duration-700">
+                <div className={`cult-card-glow p-8 text-center space-y-4 ${hasLeveledUp ? "cult-level-up" : ""}`}>
+                  <div
+                    className="text-5xl sm:text-6xl font-bold animate-in zoom-in duration-500 tabular-nums"
+                    style={{ color: currentRealm.color }}
+                  >
+                    +{earnedPoints}
+                  </div>
+                  <div className="text-base text-muted-foreground">{isZh ? "悟道点" : "Enlightenment Points"}</div>
+                  {hasLeveledUp && (
+                    <div className="animate-in slide-in-from-bottom duration-700 pt-2">
+                      <Badge
+                        className="text-base px-5 py-2 font-bold border-0"
+                        style={{ background: currentRealm.color, color: "#fff" }}
+                      >
+                        {isZh ? "突破！" : "Breakthrough!"} {isZh ? currentRealm.name : currentRealm.nameEn}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                <div className="cult-card-glow p-5 sm:p-6 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" style={{ color: currentRealm.color }} />
+                    <h3 className="text-sm font-semibold text-muted-foreground">{isZh ? "道衍回响" : "Dao Yan's Reflection"}</h3>
+                  </div>
+                  <MarkdownRenderer content={aiGuidance} />
+                </div>
+
+                <button
+                  className="cult-btn-glow w-full h-12 text-sm font-medium flex items-center justify-center gap-2 rounded-lg"
+                  style={{ background: `linear-gradient(135deg, ${currentRealm.color}cc, ${currentRealm.color}88)`, color: "#fff" }}
+                  onClick={() => setView("home")}
+                >
+                  {isZh ? "返回主界面" : "Return Home"}
+                </button>
+              </div>
+            )}
+
+            {/* --- RECORDS SUB-VIEW --- */}
+            {view === "records" && (
+              <div className="space-y-4 animate-in fade-in duration-500">
+                <h2 className="text-xl font-bold mb-2">{isZh ? "修行记录" : "Records"}</h2>
+                {state.records.length === 0 ? (
+                  <div className="cult-card-glow p-8 text-center text-muted-foreground text-sm">
+                    {isZh ? "尚无修行记录" : "No records yet"}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {state.records.slice(0, 30).map((record, index) => {
+                      const mood = moods.find((m) => m.id === record.mood);
+                      return (
+                        <div key={index} className="cult-record space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(record.date).toLocaleDateString()}
+                              </div>
+                              <Badge variant="outline" className="text-[11px]">
+                                {isZh ? mood?.name : mood?.nameEn}
+                              </Badge>
+                            </div>
+                            <div className="text-lg font-bold tabular-nums" style={{ color: currentRealm.color }}>
+                              +{record.pointsEarned}
+                            </div>
+                          </div>
+                          {record.aiGuidance && (
+                            <details className="text-xs text-muted-foreground group">
+                              <summary className="cursor-pointer hover:text-foreground transition-colors">
+                                {isZh ? "查看回响" : "View Reflection"}
+                              </summary>
+                              <div className="mt-2 pl-3 border-l-2 border-dashed border-border">
+                                <MarkdownRenderer content={record.aiGuidance} className="text-xs" />
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========== GUIDE TAB ========== */}
+        {activeTab === "guide" && view !== "tutorial" && view !== "checkin" && view !== "result" && view !== "records" && (
+          <div className="space-y-6 animate-in fade-in duration-500">
+
+            {/* Overview */}
+            <div className="cult-card-glow p-5 sm:p-6 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="h-5 w-5" style={{ color: currentRealm.color }} />
+                <h2 className="text-base font-bold">{isZh ? "修炼体系概览" : "System Overview"}</h2>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                {t("cultivation.tutorial.welcomeContent")}
+              </p>
+            </div>
+
+            {/* Realms */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Flame className="h-5 w-5" style={{ color: currentRealm.color }} />
+                <h2 className="text-base font-bold">{isZh ? "境界体系" : "Cultivation Realms"}</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {realms.map((realm) => (
+                  <div
+                    key={realm.id}
+                    className="cult-mood-card"
+                    style={{
+                      borderColor: realm.id === currentRealm.id ? `${realm.color}60` : `${realm.color}20`,
+                      background: realm.id === currentRealm.id ? `${realm.color}08` : undefined,
+                    }}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Flame className="h-4 w-4 shrink-0" style={{ color: realm.color }} />
+                      <span className="font-bold text-sm" style={{ color: realm.color }}>
+                        {isZh ? realm.name : realm.nameEn}
+                      </span>
+                      {realm.id === currentRealm.id && (
+                        <Badge className="ml-auto text-[10px] px-1.5 py-0 border-0 shrink-0" style={{ background: `${realm.color}20`, color: realm.color }}>
+                          {isZh ? "当前" : "Now"}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">{isZh ? realm.description : realm.descriptionEn}</div>
+                    <div className="text-[11px] text-muted-foreground/50 mt-1.5 tabular-nums">{realm.minEP.toLocaleString()} EP</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Moods & Points */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Star className="h-5 w-5" style={{ color: currentRealm.color }} />
+                <h2 className="text-base font-bold">{isZh ? "心境积分表" : "Mood & Points"}</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {moods.map((mood) => (
+                  <div key={mood.id} className="cult-mood-card">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Star className="h-4 w-4 shrink-0" style={{ color: currentRealm.color }} />
+                      <span className="font-bold text-sm">{isZh ? mood.name : mood.nameEn}</span>
+                      <span className="ml-auto text-sm font-bold tabular-nums shrink-0" style={{ color: currentRealm.color }}>
+                        +{mood.points}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{isZh ? mood.description : mood.descriptionEn}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Scoring Rules */}
+            <div className="cult-card-glow p-5 sm:p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <Award className="h-5 w-5" style={{ color: currentRealm.color }} />
+                <h2 className="text-base font-bold">{isZh ? "积分规则" : "Scoring Rules"}</h2>
+              </div>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex justify-between border-b border-border pb-2">
+                  <span>{isZh ? "心境基础分" : "Mood Base Points"}</span>
+                  <span className="font-medium text-foreground">10–50 EP</span>
+                </div>
+                <div className="flex justify-between border-b border-border pb-2">
+                  <span>{isZh ? "无为指数（每星）" : "Wu Wei (per star)"}</span>
+                  <span className="font-medium text-foreground">+5 EP</span>
+                </div>
+                <div className="flex justify-between border-b border-border pb-2">
+                  <span>{isZh ? "道场感应开启" : "Dao Field Active"}</span>
+                  <span className="font-medium text-foreground">+10 EP</span>
+                </div>
+                <div className="flex justify-between border-b border-border pb-2">
+                  <span>{isZh ? "心言自述（有内容）" : "Inner Reflection"}</span>
+                  <span className="font-medium text-foreground">+5 EP</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>{isZh ? "连续打卡加成" : "Streak Bonus"}</span>
+                  <span className="font-medium text-foreground">×1.1 – ×1.5</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

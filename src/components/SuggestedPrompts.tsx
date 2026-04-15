@@ -1,4 +1,4 @@
-import { Sparkles, TrendingUp, BookOpen, Code, Lightbulb, Globe } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -9,71 +9,71 @@ interface SuggestedPromptsProps {
 
 export function SuggestedPrompts({ onSelect, className }: SuggestedPromptsProps) {
   const { t } = useTranslation();
+  const [activeTag, setActiveTag] = useState<string | null>(null);
 
-  const prompts = [
+  const categories = [
     {
-      icon: Sparkles,
-      title: t('prompts.creative.title'),
-      prompt: t('prompts.creative.text'),
-      gradient: "from-purple-500 to-pink-500"
+      id: "creative",
+      label: t("prompts.creative.title"),
+      questions: [t("prompts.creative.text"), t("prompts.creative.text2")],
     },
     {
-      icon: TrendingUp,
-      title: t('prompts.market.title'),
-      prompt: t('prompts.market.text'),
-      gradient: "from-blue-500 to-cyan-500"
+      id: "market",
+      label: t("prompts.market.title"),
+      questions: [t("prompts.market.text"), t("prompts.market.text2")],
     },
     {
-      icon: BookOpen,
-      title: t('prompts.research.title'),
-      prompt: t('prompts.research.text'),
-      gradient: "from-green-500 to-emerald-500"
+      id: "research",
+      label: t("prompts.research.title"),
+      questions: [t("prompts.research.text"), t("prompts.research.text2")],
     },
     {
-      icon: Code,
-      title: t('prompts.coding.title'),
-      prompt: t('prompts.coding.text'),
-      gradient: "from-orange-500 to-red-500"
+      id: "coding",
+      label: t("prompts.coding.title"),
+      questions: [t("prompts.coding.text"), t("prompts.coding.text2")],
     },
-    {
-      icon: Lightbulb,
-      title: t('prompts.problem.title'),
-      prompt: t('prompts.problem.text'),
-      gradient: "from-yellow-500 to-orange-500"
-    },
-    {
-      icon: Globe,
-      title: t('prompts.tech.title'),
-      prompt: t('prompts.tech.text'),
-      gradient: "from-indigo-500 to-purple-500"
-    }
   ];
 
+  const visibleQuestions = activeTag
+    ? categories.find(c => c.id === activeTag)?.questions ?? []
+    : categories.flatMap(c => c.questions.slice(0, 1)); // default: 1 from each
+
+  const handleTagClick = (id: string) => {
+    setActiveTag(prev => prev === id ? null : id);
+  };
+
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 px-4 sm:px-0", className)}>
-      {prompts.map((item, index) => {
-        const Icon = item.icon;
-        return (
+    <div className={cn("space-y-3", className)}>
+      {/* Category Tags */}
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => handleTagClick(cat.id)}
+            className={cn(
+              "dao-tag text-sm transition-all",
+              activeTag === cat.id
+                ? "!bg-primary !text-primary-foreground !border-primary/80 shadow-sm"
+                : ""
+            )}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Questions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-2">
+        {visibleQuestions.map((q, index) => (
           <button
             key={index}
-            onClick={() => onSelect(item.prompt)}
-            className="group relative overflow-hidden rounded-xl bg-card border border-border p-4 sm:p-6 text-left transition-all duration-200 hover:shadow-large hover:border-accent-foreground/20 hover:-translate-y-1 active:scale-95"
+            onClick={() => onSelect(q)}
+            className="dao-question text-xs sm:text-sm text-left animate-in fade-in duration-200"
           >
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className={cn(
-                "flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white transition-transform duration-200 group-hover:scale-110",
-                item.gradient
-              )}>
-                <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{item.prompt}</p>
-              </div>
-            </div>
+            <span className="line-clamp-2">{q}</span>
           </button>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
