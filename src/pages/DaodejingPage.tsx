@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -420,6 +421,21 @@ export default function DaodejingPage() {
               )}
             </div>
           </div>
+
+          {/* Progress bar */}
+          {selected && (
+            <div className="px-4 pb-2">
+              <div className="flex items-center gap-3">
+                <Progress 
+                  value={(currentIndex + 1) / DAODEJING_CHAPTERS.length * 100} 
+                  className="h-1.5 flex-1"
+                />
+                <span className="text-xs text-muted-foreground whitespace-nowrap font-mono">
+                  {t("daodejing.progress", { current: currentIndex + 1, total: DAODEJING_CHAPTERS.length })}
+                </span>
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Content area */}
