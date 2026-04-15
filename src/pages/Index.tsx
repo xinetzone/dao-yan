@@ -202,7 +202,7 @@ export default function Index() {
                   {webSearchEnabled && (
                     <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
                       <Globe className="h-3 w-3" />
-                      <span>{isZh ? "联网" : "Web"}</span>
+                      <span>{t("common.web")}</span>
                     </div>
                   )}
                 </div>
@@ -240,7 +240,7 @@ export default function Index() {
                 <button
                   onClick={() => scrollToBottom()}
                   className="fixed bottom-28 right-6 sm:right-8 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-background border-2 border-foreground/15 shadow-md hover:bg-muted transition-all animate-in fade-in duration-200"
-                  title={isZh ? "回到底部" : "Scroll to bottom"}
+                  title={t("common.scrollToBottom")}
                 >
                   <ChevronDown className="h-4 w-4 text-foreground/70" />
                 </button>
