@@ -41,12 +41,18 @@ export function useAIChat() {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const loadMessages = useCallback((msgs: Message[]) => {
+    setMessages(msgs);
+    setError(null);
+  }, []);
+
   const sendMessage = useCallback(async (
     content: string,
     model = "anthropic/claude-sonnet-4.5",
     documentContext?: string,
     enableWebSearch?: boolean,
-    locale?: string
+    locale?: string,
+    onComplete?: (userMessage: Message, assistantMessage: Message) => void
   ) => {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -164,7 +170,17 @@ export function useAIChat() {
               break;
             }
             case "message_stop": {
-              setMessages(prev => updateLastAssistant(prev, { isStreaming: false }));
+              setMessages(prev => {
+                const updated = updateLastAssistant(prev, { isStreaming: false });
+                if (onComplete) {
+                  const lastUser      = updated[updated.length - 2];
+                  const lastAssistant = updated[updated.length - 1];
+                  if (lastUser?.role === "user" && lastAssistant?.role === "assistant") {
+                    setTimeout(() => onComplete(lastUser, lastAssistant), 0);
+                  }
+                }
+                return updated;
+              });
               break;
             }
           }
@@ -207,7 +223,7 @@ export function useAIChat() {
     setError(null);
   }, []);
 
-  return { messages, isLoading, error, sendMessage, cancel, clearMessages };
+  return { messages, isLoading, error, sendMessage, cancel, clearMessages, loadMessages };
 }
 
 function updateLastAssistant(messages: Message[], updates: Partial<Message>): Message[] {
