@@ -32,7 +32,7 @@ hljs.registerLanguage("md", markdown);
 
 // Initialize markdown-it — better CJK support than marked
 const md = new MarkdownIt({
-  html: false,
+  html: true,   // required: allows preprocessed <strong>/<em> tags to pass through
   xhtmlOut: false,
   breaks: false,
   linkify: true,
@@ -147,6 +147,33 @@ const PURIFY_CONFIG: DOMPurify.Config = {
   FORCE_BODY: true,
 };
 
+// ── CJK bold/italic preprocessing ─────────────────────────────────────────────
+/**
+ * markdown-it (CommonMark) fails to recognize closing ** as a right-flanking
+ * delimiter when the preceding char is Unicode punctuation (like ）。，) AND
+ * the following char is a CJK letter (not whitespace/punctuation).
+ *
+ * Fix: convert **text** → <strong>text</strong> BEFORE markdown-it processes
+ * the content, bypassing CommonMark's delimiter boundary detection entirely.
+ * Requires html: true in MarkdownIt config. DOMPurify handles sanitization.
+ */
+function preprocessMarkdown(content: string): string {
+  const saved: string[] = [];
+  let savedIdx = 0;
+  const PLACEHOLDER = "\uE001"; // Private Use Area — won't appear in AI responses
+
+  // 1. Save code blocks (fenced + inline) so we don't modify code content
+  let text = content
+    .replace(/```[\s\S]*?```/g, m => { saved.push(m); return `${PLACEHOLDER}${savedIdx++}${PLACEHOLDER}`; })
+    .replace(/`[^`\n]+`/g, m => { saved.push(m); return `${PLACEHOLDER}${savedIdx++}${PLACEHOLDER}`; });
+
+  // 2. **bold** → <strong>bold</strong>  (fixes CJK boundary issue)
+  text = text.replace(/\*\*([^*\n]+?)\*\*/g, (_, inner) => `<strong>${inner}</strong>`);
+
+  // 3. Restore saved code blocks
+  return text.replace(new RegExp(`${PLACEHOLDER}(\\d+)${PLACEHOLDER}`, "g"), (_, i) => saved[parseInt(i)]);
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 interface MarkdownRendererProps {
   content: string;
@@ -161,7 +188,8 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
 
   const html = useMemo(() => {
     if (!content) return "";
-    const raw = md.render(content);
+    const preprocessed = preprocessMarkdown(content);
+    const raw = md.render(preprocessed);
     return DOMPurify.sanitize(raw, PURIFY_CONFIG);
   }, [content]);
 
