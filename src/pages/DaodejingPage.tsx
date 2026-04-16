@@ -45,16 +45,18 @@ function AnnotatedText({ text, footnotes }: { text: string; footnotes: Footnotes
     <TooltipProvider delayDuration={200}>
       <div className="space-y-3 leading-[1.9] text-foreground/90">
         {paragraphs.map((para, pi) => {
-          if (!hasNotes || !MARKER_RE.test(para)) {
-            return <p key={pi}>{para}</p>;
+          // Always render as <div> — <p> cannot contain block-level descendants,
+          // and Tooltip content can trigger React's virtual-tree nesting validator
+          // even when rendered via Portal. Unified <div> prevents all such warnings.
+          const hasMarkers = hasNotes && MARKER_RE.test(para);
+          if (!hasMarkers) {
+            return <div key={pi}>{para}</div>;
           }
-          // Use a global regex only inside the closure to avoid shared lastIndex state
+          // Use a per-render regex (no `g` flag at module level) to avoid shared lastIndex
           const splitRe = new RegExp(`([${MARKER_CHARS}])`, "g");
           const segments = para.split(splitRe);
-          // Must use <div> here — <p> cannot contain block-level descendants
-          // (TooltipContent renders as a <div> in React's virtual tree)
           return (
-            <div key={pi} className="leading-[1.9]">
+            <div key={pi}>
               {segments.map((seg, si) =>
                 footnotes[seg] ? (
                   <Tooltip key={si}>

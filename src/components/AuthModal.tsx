@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -79,6 +79,9 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
           <DialogTitle className="text-center text-xl">
             {isZh ? "道衍" : "DaoYan"}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {isZh ? "登录或注册道衍账号" : "Sign in or create your DaoYan account"}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Mode tabs */}
