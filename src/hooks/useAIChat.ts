@@ -51,8 +51,8 @@ export function useAIChat() {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    // Timeout: 60s for web search, 30s for normal
-    const timeoutMs = enableWebSearch ? 60000 : 30000;
+    // Timeout: 60s for web search or document context (large system prompt), 30s for normal
+    const timeoutMs = (enableWebSearch || !!documentContext) ? 60000 : 30000;
     const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
 
     const userMessage: Message = { role: "user", content };
@@ -66,6 +66,7 @@ export function useAIChat() {
 
     const blocks = new Map<number, { type: string; content: string }>();
     let receivedAnyData = false;
+    let receivedContentData = false; // true only when actual text/thinking content arrives
 
     try {
       await fetchEventSource(AI_CHAT_ENDPOINT, {
@@ -151,9 +152,11 @@ export function useAIChat() {
               const block = blocks.get(data.index);
               if (block?.type === "thinking") {
                 block.content += data.delta.thinking || "";
+                if (block.content) receivedContentData = true;
                 setMessages(prev => updateLastAssistant(prev, { thinking: block.content }));
               } else if (block?.type === "text") {
                 block.content += data.delta.text || "";
+                if (block.content) receivedContentData = true;
                 setMessages(prev => updateLastAssistant(prev, { content: block.content }));
               }
               break;
@@ -177,12 +180,14 @@ export function useAIChat() {
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         // Timed out or user cancelled
-        if (!receivedAnyData) {
-          const isZh = i18n.language === "zh-CN";
+        const isZh = i18n.language === "zh-CN";
+        if (!receivedContentData) {
+          // No actual content received (either nothing at all, or only SSE metadata like message_start)
+          // Remove the empty assistant bubble and show a timeout error
           setError(isZh ? "请求超时，请稍后重试" : "Request timed out, please try again");
           setMessages(prev => prev.slice(0, -1));
         } else {
-          // Partial data received, just mark stream as done
+          // Partial content was received — keep what we have, just mark stream as done
           setMessages(prev => updateLastAssistant(prev, { isStreaming: false }));
         }
       } else if (err instanceof Error) {
