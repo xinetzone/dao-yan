@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCultivation } from "@/hooks/useCultivation";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { SEO } from "@/components/SEO";
 import {
   ArrowLeft, Flame, Star, Calendar, TrendingUp,
-  ChevronRight, Sparkles, Loader2, BookOpen, Award,
+  ChevronRight, Sparkles, Loader2, BookOpen, Award, CloudOff, Cloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,10 +81,12 @@ export default function CultivationPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
   const {
     state, moods, realms, getCurrentRealm, getNextRealm,
-    canCheckInToday, checkIn, completeTutorial, getTutorialCompleted,
-  } = useCultivation();
+    canCheckInToday, checkIn, completeTutorial, getTutorialCompleted, isSyncing,
+  } = useCultivation(user?.id);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>("checkin");
   const [view, setView] = useState<SubView>("home");
@@ -147,7 +151,7 @@ export default function CultivationPage() {
     try {
       const fullGuidance = await streamAIGuidance(prompt, systemPrompt, i18n.language, abortController.signal);
       clearTimeout(timeoutId);
-      const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fullGuidance);
+      const points = await checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fullGuidance);
       setEarnedPoints(points);
       setAiGuidance(fullGuidance);
       if (fromTutorial) { setView("tutorial"); setTutorialStep(4); setFromTutorial(false); }
@@ -156,7 +160,7 @@ export default function CultivationPage() {
       clearTimeout(timeoutId);
       console.error("AI guidance failed:", error);
       const fallback = t("cultivation.fallbackGuidance");
-      const points = checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallback);
+      const points = await checkIn(selectedMood, wuWeiScore, daoFieldActive, insight, fallback);
       setEarnedPoints(points);
       setAiGuidance(fallback);
       if (fromTutorial) { setView("tutorial"); setTutorialStep(4); setFromTutorial(false); }
@@ -168,9 +172,9 @@ export default function CultivationPage() {
 
   const hasLeveledUp = getCurrentRealm().id > previousRealm;
 
-  const handleTutorialNext = () => {
+  const handleTutorialNext = async () => {
     if (tutorialStep === 3) { setFromTutorial(true); handleCheckInStart(); }
-    else if (tutorialStep === 4) { completeTutorial(); setView("home"); }
+    else if (tutorialStep === 4) { await completeTutorial(); setView("home"); }
     else if (tutorialStep < TUTORIAL_STEPS.length - 1) setTutorialStep(tutorialStep + 1);
   };
 
@@ -194,6 +198,25 @@ export default function CultivationPage() {
         url="https://dao-yan.enter.pro/cultivate"
       />
       <div className="min-h-screen bg-background text-foreground">
+      {/* Login banner */}
+      {!user && (
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/40 text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <CloudOff className="h-4 w-4 shrink-0" />
+            {isZh ? "未登录，数据仅保存在本设备" : "Not signed in — data saved locally only"}
+          </span>
+          <Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={() => setAuthOpen(true)}>
+            {isZh ? "登录以同步云端" : "Sign in to sync"}
+          </Button>
+        </div>
+      )}
+      {user && isSyncing && (
+        <div className="flex items-center gap-2 px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b border-border">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <Cloud className="h-3 w-3" />
+          {isZh ? "正在同步修炼数据..." : "Syncing cultivation data..."}
+        </div>
+      )}
       <div className="relative max-w-2xl mx-auto px-4 py-4 sm:py-6 pb-12">
         {/* Floating decoration */}
         <div className="dao-float-square dao-float-1 hidden sm:block" />
@@ -757,6 +780,7 @@ export default function CultivationPage() {
 
       </div>
     </div>
+    <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
     </>
   );
 }

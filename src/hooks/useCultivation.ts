@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface CultivationRealm {
   id: number;
@@ -51,14 +52,12 @@ const MOODS = [
 
 const STORAGE_KEY = "cultivation_state_v1";
 
-function getInitialState(): CultivationState {
+function getLocalState(): CultivationState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error("Failed to load cultivation state:", error);
+    if (stored) return JSON.parse(stored);
+  } catch {
+    // ignore
   }
   return {
     enlightenmentPoints: 0,
@@ -70,26 +69,143 @@ function getInitialState(): CultivationState {
   };
 }
 
-function saveState(state: CultivationState) {
+function saveLocalState(state: CultivationState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    console.error("Failed to save cultivation state:", error);
+  } catch {
+    // ignore
   }
 }
 
-export function useCultivation() {
-  const [state, setState] = useState<CultivationState>(getInitialState);
+type DBProfile = {
+  enlightenment_points: number;
+  check_in_streak: number;
+  total_check_ins: number;
+  last_check_in_date: string | null;
+  tutorial_completed: boolean;
+};
 
+type DBRecord = {
+  date: string;
+  mood: string;
+  wu_wei_score: number;
+  dao_field_active: boolean;
+  insight: string;
+  points_earned: number;
+  ai_guidance: string;
+};
+
+function mapDBToState(profile: DBProfile, records: DBRecord[]): CultivationState {
+  return {
+    enlightenmentPoints: profile.enlightenment_points,
+    checkInStreak: profile.check_in_streak,
+    totalCheckIns: profile.total_check_ins,
+    lastCheckInDate: profile.last_check_in_date,
+    tutorialCompleted: profile.tutorial_completed,
+    records: records.map(r => ({
+      date: r.date,
+      mood: r.mood,
+      wuWeiScore: r.wu_wei_score,
+      daoFieldActive: r.dao_field_active,
+      insight: r.insight,
+      pointsEarned: r.points_earned,
+      aiGuidance: r.ai_guidance,
+    })),
+  };
+}
+
+export function useCultivation(userId?: string) {
+  const [state, setState] = useState<CultivationState>(getLocalState);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const loadedForUser = useRef<string | null>(null);
+
+  // --- DB load + optional migration ---
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    if (!userId || loadedForUser.current === userId) return;
 
+    async function loadFromDB() {
+      setIsSyncing(true);
+      try {
+        const [profileRes, recordsRes] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", userId!).maybeSingle(),
+          supabase.from("cultivation_records")
+            .select("*")
+            .eq("user_id", userId!)
+            .order("created_at", { ascending: false })
+            .limit(100),
+        ]);
+
+        const profile = profileRes.data as DBProfile | null;
+        const records = (recordsRes.data ?? []) as DBRecord[];
+
+        // Migrate localStorage → DB if DB is empty
+        if (profile && profile.total_check_ins === 0 && records.length === 0) {
+          const local = getLocalState();
+          if (local.totalCheckIns > 0) {
+            await migrateLocalToDB(userId!, local, profile);
+            loadedForUser.current = userId!;
+            return; // migrateLocalToDB calls loadFromDB again internally
+          }
+        }
+
+        if (profile) setState(mapDBToState(profile, records));
+        loadedForUser.current = userId!;
+      } catch (err) {
+        console.error("Failed to load cultivation from DB:", err);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+
+    async function migrateLocalToDB(uid: string, local: CultivationState, profile: DBProfile) {
+      try {
+        // Batch insert records (most recent first, up to 100)
+        if (local.records.length > 0) {
+          const rows = local.records.map(r => ({
+            user_id: uid,
+            date: r.date,
+            mood: r.mood,
+            wu_wei_score: r.wuWeiScore,
+            dao_field_active: r.daoFieldActive,
+            insight: r.insight,
+            points_earned: r.pointsEarned,
+            ai_guidance: r.aiGuidance,
+          }));
+          await supabase.from("cultivation_records").insert(rows);
+        }
+        // Update profile with local stats
+        await supabase.from("profiles").update({
+          enlightenment_points: local.enlightenmentPoints,
+          check_in_streak: local.checkInStreak,
+          total_check_ins: local.totalCheckIns,
+          last_check_in_date: local.lastCheckInDate,
+          tutorial_completed: local.tutorialCompleted ?? false,
+        }).eq("id", uid);
+
+        // Set state directly from local (avoid extra DB round-trip)
+        setState(local);
+        loadedForUser.current = uid;
+      } catch (err) {
+        console.error("Migration failed:", err);
+        // Fallback: use local state
+        setState(local);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+
+    loadFromDB();
+  }, [userId]);
+
+  // --- Persist to localStorage only when NOT logged in ---
+  useEffect(() => {
+    if (!userId) saveLocalState(state);
+  }, [state, userId]);
+
+  // --- Realm helpers ---
   const getCurrentRealm = useCallback((): CultivationRealm => {
     for (let i = REALMS.length - 1; i >= 0; i--) {
-      if (state.enlightenmentPoints >= REALMS[i].minEP) {
-        return REALMS[i];
-      }
+      if (state.enlightenmentPoints >= REALMS[i].minEP) return REALMS[i];
     }
     return REALMS[0];
   }, [state.enlightenmentPoints]);
@@ -102,8 +218,7 @@ export function useCultivation() {
 
   const canCheckInToday = useCallback((): boolean => {
     if (!state.lastCheckInDate) return true;
-    const today = new Date().toDateString();
-    return state.lastCheckInDate !== today;
+    return state.lastCheckInDate !== new Date().toDateString();
   }, [state.lastCheckInDate]);
 
   const calculatePoints = useCallback((
@@ -118,54 +233,82 @@ export function useCultivation() {
     const daoFieldBonus = daoFieldActive ? 10 : 0;
     const insightBonus = insightLength > 20 ? 8 : insightLength > 5 ? 4 : 0;
     const streakBonus = Math.min(state.checkInStreak * 2, 20);
-    
     return basePoints + moodBonus + wuWeiBonus + daoFieldBonus + insightBonus + streakBonus;
   }, [state.checkInStreak]);
 
-  const checkIn = useCallback((
+  const checkIn = useCallback(async (
     mood: string,
     wuWeiScore: number,
     daoFieldActive: boolean,
     insight: string,
     aiGuidance: string
-  ) => {
+  ): Promise<number> => {
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     const isConsecutive = state.lastCheckInDate === yesterday;
-    
     const pointsEarned = calculatePoints(mood, wuWeiScore, daoFieldActive, insight.length);
-    
+
     const newRecord: CheckInRecord = {
-      date: today,
-      mood,
-      wuWeiScore,
-      daoFieldActive,
-      insight,
-      pointsEarned,
-      aiGuidance,
+      date: today, mood, wuWeiScore, daoFieldActive, insight, pointsEarned, aiGuidance,
     };
 
-    setState(prev => ({
-      ...prev,
-      enlightenmentPoints: prev.enlightenmentPoints + pointsEarned,
-      checkInStreak: isConsecutive ? prev.checkInStreak + 1 : 1,
-      totalCheckIns: prev.totalCheckIns + 1,
-      lastCheckInDate: today,
-      records: [newRecord, ...prev.records].slice(0, 100),
-    }));
+    let newEP = 0, newStreak = 0, newTotal = 0;
+    setState(prev => {
+      newEP = prev.enlightenmentPoints + pointsEarned;
+      newStreak = isConsecutive ? prev.checkInStreak + 1 : 1;
+      newTotal = prev.totalCheckIns + 1;
+      return {
+        ...prev,
+        enlightenmentPoints: newEP,
+        checkInStreak: newStreak,
+        totalCheckIns: newTotal,
+        lastCheckInDate: today,
+        records: [newRecord, ...prev.records].slice(0, 100),
+      };
+    });
+
+    if (userId) {
+      try {
+        await supabase.from("cultivation_records").insert({
+          user_id: userId, date: today, mood,
+          wu_wei_score: wuWeiScore, dao_field_active: daoFieldActive,
+          insight, points_earned: pointsEarned, ai_guidance: aiGuidance,
+        });
+        await supabase.from("profiles").update({
+          enlightenment_points: newEP,
+          check_in_streak: newStreak,
+          total_check_ins: newTotal,
+          last_check_in_date: today,
+        }).eq("id", userId);
+      } catch (err) {
+        console.error("Failed to sync check-in to DB:", err);
+      }
+    }
 
     return pointsEarned;
-  }, [state.lastCheckInDate, calculatePoints]);
+  }, [state.lastCheckInDate, calculatePoints, userId]);
 
-  const completeTutorial = useCallback(() => {
+  const completeTutorial = useCallback(async (): Promise<number> => {
     const TUTORIAL_REWARD = 50;
-    setState(prev => ({
-      ...prev,
-      tutorialCompleted: true,
-      enlightenmentPoints: prev.enlightenmentPoints + TUTORIAL_REWARD,
-    }));
+    let newEP = 0;
+    setState(prev => {
+      newEP = prev.enlightenmentPoints + TUTORIAL_REWARD;
+      return { ...prev, tutorialCompleted: true, enlightenmentPoints: newEP };
+    });
+
+    if (userId) {
+      try {
+        await supabase.from("profiles").update({
+          tutorial_completed: true,
+          enlightenment_points: newEP,
+        }).eq("id", userId);
+      } catch (err) {
+        console.error("Failed to sync tutorial completion to DB:", err);
+      }
+    }
+
     return TUTORIAL_REWARD;
-  }, []);
+  }, [userId]);
 
   const getTutorialCompleted = useCallback((): boolean => {
     return state.tutorialCompleted === true;
@@ -173,6 +316,7 @@ export function useCultivation() {
 
   return {
     state,
+    isSyncing,
     realms: REALMS,
     moods: MOODS,
     getCurrentRealm,
