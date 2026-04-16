@@ -5,9 +5,11 @@ import { SuggestedPrompts } from "@/components/SuggestedPrompts";
 import { ChatMessage } from "@/components/ChatMessage";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
 import { DocumentPanel } from "@/components/DocumentPanel";
+import { AuthModal } from "@/components/AuthModal";
 import { SEO } from "@/components/SEO";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useDocumentCollections } from "@/hooks/useDocumentCollections";
+import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen, AlertCircle, CheckCircle2, Globe, Menu, ChevronDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ initTheme();
 export default function Index() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === "zh-CN";
+  const { user } = useAuth();
   const { messages, isLoading, error, sendMessage, cancel, clearMessages } = useAIChat();
   const { collections, getCollectionContext } = useDocumentCollections();
   const [hasStartedChat, setHasStartedChat] = useState(false);
@@ -28,6 +31,8 @@ export default function Index() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,13 +65,27 @@ export default function Index() {
   const activeCollectionName = collections.find(c => c.id === activeCollectionId)?.name;
 
   const handleSubmit = useCallback(async (query: string) => {
+    if (!user) {
+      setPendingQuery(query);
+      setAuthOpen(true);
+      return;
+    }
     if (!hasStartedChat) setHasStartedChat(true);
     let docContext: string | undefined;
     if (activeCollectionId) {
       docContext = await getCollectionContext(activeCollectionId);
     }
     sendMessage(query, "anthropic/claude-sonnet-4.5", docContext, webSearchEnabled, i18n.language);
-  }, [hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled, i18n.language]);
+  }, [user, hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled, i18n.language]);
+
+  // After successful auth, replay the pending query
+  const handleAuthSuccess = useCallback(() => {
+    if (pendingQuery) {
+      const q = pendingQuery;
+      setPendingQuery(null);
+      setTimeout(() => handleSubmit(q), 100);
+    }
+  }, [pendingQuery, handleSubmit]);
 
   const handleReset = () => {
     clearMessages();
@@ -94,6 +113,7 @@ export default function Index() {
         keywords="道衍,AI对话,道德经,帛书,老子,智慧问答,修行指导,国学AI"
         url="https://dao-yan.enter.pro/"
       />
+      <AuthModal open={authOpen} onOpenChange={setAuthOpen} onSuccess={handleAuthSuccess} />
       <div className="flex h-[100dvh] overflow-hidden bg-background">
       <NavigationSidebar
         activeCollectionId={activeCollectionId}

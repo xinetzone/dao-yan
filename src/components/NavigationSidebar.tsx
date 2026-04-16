@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Flame, FolderOpen, RotateCcw, X, ScrollText, BookOpen } from "lucide-react";
+import { Flame, FolderOpen, RotateCcw, X, ScrollText, BookOpen, LogIn, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "./AuthModal";
 
 interface NavigationSidebarProps {
   activeCollectionId: string | null;
@@ -24,6 +27,8 @@ export function NavigationSidebar({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const isZh = i18n.language === "zh-CN";
+  const { user, signOut } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <>
@@ -110,10 +115,43 @@ export function NavigationSidebar({
 
         {/* Footer */}
         <div className="p-4 border-t border-border space-y-1">
+          {/* User section */}
+          {user ? (
+            <div className="flex items-center gap-2 px-2 py-2 rounded-md mb-1">
+              <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-xs font-medium text-primary">
+                  {user.email?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
+                {user.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={signOut}
+                title={isZh ? "退出登录" : "Sign out"}
+              >
+                <LogOut className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-3 h-9 mb-1"
+              onClick={() => setAuthOpen(true)}
+            >
+              <LogIn className="h-4 w-4 shrink-0" />
+              <span className="text-sm">{isZh ? "登录 / 注册" : "Sign In"}</span>
+            </Button>
+          )}
           <ThemeToggle />
           <LanguageSwitcher />
         </div>
       </aside>
+
+      <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
     </>
   );
 }

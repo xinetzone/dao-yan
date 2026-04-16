@@ -43,9 +43,10 @@ export function useDocumentCollections() {
   }, []);
 
   const createCollection = useCallback(async (name: string, description?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
       .from("document_collections")
-      .insert({ name, description: description || "" })
+      .insert({ name, description: description || "", user_id: user?.id ?? null })
       .select()
       .single();
     if (error) throw error;
