@@ -197,10 +197,10 @@ export function useCultivation(userId?: string) {
     loadFromDB();
   }, [userId]);
 
-  // --- Persist to localStorage only when NOT logged in ---
+  // --- Always persist to localStorage as offline cache (even when logged in) ---
   useEffect(() => {
-    if (!userId) saveLocalState(state);
-  }, [state, userId]);
+    saveLocalState(state);
+  }, [state]);
 
   // --- Realm helpers ---
   const getCurrentRealm = useCallback((): CultivationRealm => {
