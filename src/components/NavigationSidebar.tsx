@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Flame, FolderOpen, RotateCcw, X, ScrollText, BookOpen, LogIn, LogOut } from "lucide-react";
+import { Flame, FolderOpen, RotateCcw, X, ScrollText, BookOpen, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
@@ -126,6 +126,15 @@ export function NavigationSidebar({
               <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
                 {user.email}
               </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => { navigate("/profile"); onClose(); }}
+                title={isZh ? "我的主页" : "My Profile"}
+              >
+                <User className="h-3 w-3" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
