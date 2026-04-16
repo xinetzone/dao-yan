@@ -10,7 +10,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  sendPasswordReset: (email: string) => Promise<{ error: Error | null }>;
+  sendPasswordResetOTP: (email: string) => Promise<{ error: Error | null }>;
+  verifyPasswordResetOTP: (email: string, token: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
@@ -62,10 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  const sendPasswordReset = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/`,
+  const sendPasswordResetOTP = async (email: string) => {
+    // Send 6-digit OTP via email (avoids clicking links through Kong gateway)
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
     });
+    return { error };
+  };
+
+  const verifyPasswordResetOTP = async (email: string, token: string) => {
+    // Verify OTP — signs the user in so they can update their password
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
     return { error };
   };
 
@@ -78,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, loading, isPasswordRecovery,
-      signIn, signUp, signOut, sendPasswordReset, updatePassword,
+      signIn, signUp, signOut, sendPasswordResetOTP, verifyPasswordResetOTP, updatePassword,
     }}>
       {children}
     </AuthContext.Provider>
