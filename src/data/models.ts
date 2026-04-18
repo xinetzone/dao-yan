@@ -45,4 +45,4 @@ export const MODEL_OPTIONS: ModelOption[] = [
   },
 ];
 
-export const DEFAULT_MODEL_ID = "anthropic/claude-sonnet-4.5";
+export const DEFAULT_MODEL_ID = "z-ai/glm-5";
