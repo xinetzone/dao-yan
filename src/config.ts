@@ -23,6 +23,12 @@ export const SUPABASE_ANON_KEY =
 /** Edge function endpoint for AI chat */
 export const AI_CHAT_ENDPOINT = `${SUPABASE_URL}/functions/v1/ai-chat-167c2bc1450e`;
 
+/** Agent API endpoint for third-party integrations */
+export const AGENT_API_ENDPOINT = `${SUPABASE_URL}/functions/v1/daoyan-agent-api`;
+
+/** MCP Server endpoint */
+export const MCP_ENDPOINT = `${SUPABASE_URL}/functions/v1/daoyan-mcp`;
+
 /** Maximum characters allowed in a single user message */
 export const MAX_MESSAGE_LENGTH = 8000;
 

@@ -23,7 +23,7 @@
 - **帛书版《道德经》** 的无为而治哲学
 - **佛家禅修** 的直心与如如不动智慧
 - **ψ=ψ(ψ) 万物理论** 的崩塌宇宙观（AllTheory）
-- **现代 AI** (Claude Sonnet 4.5) 驱动的智能对话
+- **多模型 AI** 驱动的智能对话（Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5）
 
 ### 核心理念
 
@@ -35,7 +35,9 @@
 
 ### AI 深度研究
 - **中国古典学术风 UI** — 暖米色宣纸底、朱红强调色、手绘风卡片
+- **多模型切换** — 搜索栏下拉选择 AI 模型（Claude / GPT / Gemini / GLM）
 - **流式响应** — 实时显示 AI 思考过程，支持中途停止生成
+- **智能上下文管理** — 自动裁剪过长对话历史（保留最近 20 条），max_tokens 8192
 - **Markdown 富文本渲染** — 代码高亮、表格、引用、一键复制（基于 marked + highlight.js）
 - **来源引用** — 联网搜索结果以带 favicon 的卡片形式展示
 - **消息操作** — 复制 AI 回复、重新生成最后一条回复
@@ -43,7 +45,7 @@
 
 ### 智能联网搜索
 - **可选联网** — 搜索栏工具栏一键启用
-- **三层容错搜索** — SearXNG JSON API（4 个实例）→ DuckDuckGo HTML → DuckDuckGo Lite
+- **双层容错搜索** — DuckDuckGo HTML → DuckDuckGo Lite
 - **搜索进度反馈** — 联网时显示"正在联网搜索..."进度提示
 - **自动内容注入** — 搜索结果作为 system context 传递给 AI，附引用卡片展示
 
@@ -73,6 +75,12 @@
 - **语言感知 AI 回复** — 自动将 locale 传递给 AI，回复语言跟随界面语言
 - **道衍提示词** — 原文解读、版本对比、思想阐发、生活应用（每类 2 题）
 - **自动检测** — 根据浏览器语言自动切换
+
+### Agent API & MCP Server
+- **REST Agent API** — 一个接口即可接入道衍智慧，支持流式/非流式、多轮对话、联网搜索
+- **MCP Server** — 实现 Model Context Protocol (JSON-RPC 2.0)，兼容 Claude Desktop、Cursor 等
+- **3 个 MCP 工具** — `ask_daoyan`（提问）、`search_chapters`（搜索章节）、`get_chapter`（获取章节）
+- **API 文档页** — 内置完整使用指南、cURL/JS 示例、MCP 配置方法（`/api-docs`）
 
 ---
 
@@ -107,9 +115,9 @@ pnpm dev
 | Markdown | marked + highlight.js + DOMPurify | 富文本渲染 + XSS 防护 |
 | 路由 | React Router v7 | 声明式路由（模块级定义） |
 | 国际化 | i18next + react-i18next | 中英双语 + locale 传 AI |
-| 后端 | Supabase Edge Functions (Deno) | AI 聊天、搜索、内容抓取 |
-| AI | Claude Sonnet 4.5 via SSE | 流式响应 + 可中断 |
-| 搜索 | SearXNG + DuckDuckGo（三层容错） | 结果注入 system context |
+| 后端 | Supabase Edge Functions (Deno) | AI 聊天、搜索、Agent API、MCP |
+| AI | 多模型（Claude / GPT / Gemini / GLM） | 流式响应 + 可中断 + 模型切换 |
+| 搜索 | DuckDuckGo（双层容错） | 结果注入 system context |
 | 存储 | localStorage | 修炼数据 + 深色模式持久化 |
 
 ### 目录结构
@@ -136,10 +144,14 @@ dao-yan/
 │   ├── i18n/locales/                # zh-CN.json / en-US.json
 │   ├── pages/
 │   │   ├── Index.tsx                # 主页（英雄卡/聊天/滚动到底）
-│   │   └── CultivationPage.tsx      # 修炼（打卡/教程/记录）
+│   │   ├── CultivationPage.tsx      # 修炼（打卡/教程/记录）
+│   │   ├── DaodejingPage.tsx        # 帛书老子（81 章浏览）
+│   │   └── ApiDocsPage.tsx          # API & MCP 文档页
 │   └── index.css                    # 统一暖色设计令牌 + 自定义 CSS 系统
 ├── supabase/functions/
-│   ├── ai-chat-*/                   # AI 聊天 + 三层联网搜索 + locale
+│   ├── ai-chat-*/                   # AI 聊天 + 联网搜索 + 多模型 + 空流重试
+│   ├── daoyan-agent-api/            # Agent REST API（流式/非流式/多轮）
+│   ├── daoyan-mcp/                  # MCP Server（JSON-RPC 2.0）
 │   ├── fetch-url-content/           # URL 内容抓取（8s 超时）
 │   └── web-search/                  # 搜索（已并入 ai-chat）
 └── .enter/                          # 复盘报告 + 平台配置
@@ -237,7 +249,7 @@ Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk 
 - **Daoist philosophy** (Wu Wei — action through non-action)
 - **Buddhist mindfulness** wisdom
 - **ψ=ψ(ψ) Theory of Everything** collapse cosmology (AllTheory)
-- **Modern AI** (Claude Sonnet 4.5) driven dialogue
+- **Modern AI** (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5) driven dialogue
 
 > "The Way that can be told is not the eternal Way." — Mawangdui Silk Text
 
@@ -245,14 +257,16 @@ Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk 
 
 **AI Research**
 - Chinese scholarly aesthetic UI (warm cream paper, cinnabar red, sketch-border cards)
+- Multi-model selector (Claude / GPT / Gemini / GLM) in the search toolbar
 - Streaming responses with real-time thinking display; stop anytime
+- Smart context management — auto-trims long history (keeps last 20), max_tokens 8192
 - Markdown rendering with syntax highlight, copy buttons, tables (marked + highlight.js)
 - Source citation cards with favicons from web search results
 - Copy & regenerate buttons on AI messages
 
 **Web Search**
 - One-click web toggle in toolbar
-- 3-layer fallback: SearXNG JSON API → DuckDuckGo HTML → DuckDuckGo Lite
+- 2-layer fallback: DuckDuckGo HTML → DuckDuckGo Lite
 - Search progress indicator while fetching
 - Results injected as system context with source citation cards
 
@@ -277,9 +291,15 @@ Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk 
 - Full Chinese/English UI with locale-aware AI responses
 - Browser language auto-detection
 
+**Agent API & MCP Server**
+- REST Agent API — single endpoint to access Daoyan wisdom (stream/non-stream, multi-turn, web search)
+- MCP Server — Model Context Protocol (JSON-RPC 2.0), compatible with Claude Desktop, Cursor, etc.
+- 3 MCP Tools — `ask_daoyan`, `search_chapters`, `get_chapter`
+- Built-in API docs page at `/api-docs` with cURL/JS examples and MCP configs
+
 ## Tech Stack
 
-React 19.1 + TypeScript 5.9 + Vite 7 · Tailwind CSS + shadcn/ui · marked + highlight.js · React Router v7 · i18next · Supabase Edge Functions (Deno) · Claude Sonnet 4.5 SSE
+React 19.1 + TypeScript 5.9 + Vite 7 · Tailwind CSS + shadcn/ui · marked + highlight.js · React Router v7 · i18next · Supabase Edge Functions (Deno) · Multi-model AI (Claude / GPT / Gemini / GLM) SSE · MCP Server
 
 ## Quick Start
 

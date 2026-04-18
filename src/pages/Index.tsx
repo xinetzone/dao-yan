@@ -15,6 +15,7 @@ import { BookOpen, AlertCircle, CheckCircle2, Globe, Menu, ChevronDown, Flame, S
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { initTheme } from "@/lib/theme";
+import { DEFAULT_MODEL_ID } from "@/data/models";
 import type { Message } from "@/hooks/useAIChat";
 
 
@@ -27,11 +28,12 @@ export default function Index() {
   const { user } = useAuth();
   const { messages, isLoading, error, sendMessage, cancel, clearMessages, loadMessages } = useAIChat();
   const { collections, getCollectionContext } = useDocumentCollections();
-  const { sessions, createSession, appendMessage, loadSessionMessages, deleteSession } = useChatHistory(user?.id);
+  const { sessions, createSession, appendMessage, loadSessionMessages, deleteSession, renameSession } = useChatHistory(user?.id);
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [docPanelOpen, setDocPanelOpen] = useState(false);
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -97,8 +99,8 @@ export default function Index() {
         await appendMessage(sessionId, assistantMsg);
       }
     };
-    sendMessage(query, "anthropic/claude-sonnet-4.5", docContext, webSearchEnabled, i18n.language, onComplete);
-  }, [user, hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled, i18n.language, createSession, appendMessage, setCurrentSession]);
+    sendMessage(query, selectedModelId, docContext, webSearchEnabled, i18n.language, onComplete);
+  }, [user, hasStartedChat, activeCollectionId, getCollectionContext, sendMessage, webSearchEnabled, selectedModelId, i18n.language, createSession, appendMessage, setCurrentSession]);
 
   // After user logs in/registers, React has applied setUser — handleSubmit now sees user!=null
   useEffect(() => {
@@ -139,14 +141,16 @@ export default function Index() {
     setDocPanelOpen(false);
   };
 
-  // Regenerate: resend the last user message
+  // Regenerate: remove last user+assistant pair, then re-send
   const handleRegenerate = useCallback(() => {
-    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
-    if (lastUserMsg && !isLoading) {
-      // Remove last two messages (user + assistant) and re-send
-      handleSubmit(lastUserMsg.content);
+    const idx = messages.map(m => m.role).lastIndexOf("user");
+    if (idx !== -1 && !isLoading) {
+      const content = messages[idx].content;
+      // Actually remove the last pair before re-sending (fixes duplicate messages bug)
+      loadMessages(messages.slice(0, idx));
+      handleSubmit(content);
     }
-  }, [messages, isLoading, handleSubmit]);
+  }, [messages, isLoading, handleSubmit, loadMessages]);
 
   return (
     <>
@@ -168,6 +172,7 @@ export default function Index() {
         currentSessionId={currentSessionId}
         onSessionSelect={handleSessionSelect}
         onSessionDelete={handleSessionDelete}
+        onSessionRename={renameSession}
       />
 
       <DocumentPanel
@@ -314,6 +319,8 @@ export default function Index() {
                 onWebSearchToggle={() => setWebSearchEnabled(!webSearchEnabled)}
                 onDocPanelOpen={() => setDocPanelOpen(true)}
                 activeCollectionId={activeCollectionId}
+                selectedModelId={selectedModelId}
+                onModelChange={setSelectedModelId}
               />
             </div>
           </div>
@@ -402,6 +409,8 @@ export default function Index() {
                   onWebSearchToggle={() => setWebSearchEnabled(!webSearchEnabled)}
                   onDocPanelOpen={() => setDocPanelOpen(true)}
                   activeCollectionId={activeCollectionId}
+                  selectedModelId={selectedModelId}
+                  onModelChange={setSelectedModelId}
                 />
               </div>
             </div>

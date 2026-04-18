@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Flame, FolderOpen, RotateCcw, X, ScrollText, BookOpen,
-  LogIn, LogOut, User, Trash2, MessageSquare,
+  LogIn, LogOut, User, Trash2, MessageSquare, Pencil, Code2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -25,6 +25,7 @@ interface NavigationSidebarProps {
   currentSessionId?: string | null;
   onSessionSelect?: (id: string) => void;
   onSessionDelete?: (id: string) => void;
+  onSessionRename?: (id: string, newTitle: string) => void;
 }
 
 /** Group sessions by relative date */
@@ -60,13 +61,17 @@ export function NavigationSidebar({
   currentSessionId,
   onSessionSelect,
   onSessionDelete,
+  onSessionRename,
 }: NavigationSidebarProps) {
   const { t, i18n } = useTranslation();
   const navigate    = useNavigate();
   const isZh        = i18n.language === "zh-CN";
   const { user, signOut } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
-  const [hoveredSessionId, setHoveredSessionId] = useState<string | null>(null);
+  // Inline rename state
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   // ── Touch gesture: swipe-right-from-edge to open, swipe-left to close ───
   const touchStartX = useRef<number>(0);
@@ -95,6 +100,29 @@ export function NavigationSidebar({
   }, [isOpen, onOpen, onClose]);
 
   const sessionGroups = user ? groupByDate(sessions, isZh) : [];
+
+  // ── Inline rename helpers ─────────────────────────────────────────────────
+  const startEditing = (session: ChatSession) => {
+    setEditingSessionId(session.id);
+    setEditingTitle(session.title);
+  };
+  const cancelEditing = () => {
+    setEditingSessionId(null);
+    setEditingTitle("");
+  };
+  const saveEditing = () => {
+    if (editingSessionId && editingTitle.trim()) {
+      onSessionRename?.(editingSessionId, editingTitle.trim());
+    }
+    cancelEditing();
+  };
+
+  // Auto-focus the rename input when it appears
+  useEffect(() => {
+    if (editingSessionId) {
+      setTimeout(() => editInputRef.current?.focus(), 0);
+    }
+  }, [editingSessionId]);
 
   return (
     <>
@@ -154,32 +182,62 @@ export function NavigationSidebar({
                       <div
                         key={session.id}
                         className="relative group"
-                        onMouseEnter={() => setHoveredSessionId(session.id)}
-                        onMouseLeave={() => setHoveredSessionId(null)}
                       >
-                        <button
-                          className={cn(
-                            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left",
-                            "text-xs text-foreground/80 hover:bg-accent/60 transition-colors",
-                            "pr-8", // space for delete button
-                            currentSessionId === session.id && "bg-accent text-foreground font-medium"
-                          )}
-                          onClick={() => { onSessionSelect?.(session.id); onClose(); }}
-                        >
-                          <MessageSquare className="h-3 w-3 shrink-0 text-muted-foreground" />
-                          <span className="truncate">{session.title}</span>
-                        </button>
-                        {/* Delete button — show on hover */}
-                        {(hoveredSessionId === session.id || currentSessionId === session.id) && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-0.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                            onClick={(e) => { e.stopPropagation(); onSessionDelete?.(session.id); }}
-                            title={isZh ? "删除对话" : "Delete"}
+                        {editingSessionId === session.id ? (
+                          /* ── Inline rename mode ── */
+                          <div className="flex items-center gap-2 px-2 py-1.5">
+                            <MessageSquare className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <input
+                              ref={editInputRef}
+                              value={editingTitle}
+                              onChange={e => setEditingTitle(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === "Enter")  { e.preventDefault(); saveEditing(); }
+                                if (e.key === "Escape") { e.preventDefault(); cancelEditing(); }
+                              }}
+                              onBlur={saveEditing}
+                              className="flex-1 min-w-0 bg-transparent text-xs text-foreground border-b border-primary outline-none py-0.5 pr-1"
+                              maxLength={60}
+                            />
+                          </div>
+                        ) : (
+                          /* ── Normal mode ── */
+                          <button
+                            className={cn(
+                              "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left",
+                              "text-xs text-foreground/80 hover:bg-accent/60 transition-colors",
+                              "pr-16", // space for two action buttons
+                              currentSessionId === session.id && "bg-accent text-foreground font-medium"
+                            )}
+                            onClick={() => { onSessionSelect?.(session.id); onClose(); }}
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                            <MessageSquare className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{session.title}</span>
+                          </button>
+                        )}
+
+                        {/* Action buttons: rename + delete — visible on hover */}
+                        {editingSessionId !== session.id && (
+                          <div className="absolute right-0.5 top-0.5 flex opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={e => { e.stopPropagation(); startEditing(session); }}
+                              title={isZh ? "重命名" : "Rename"}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={e => { e.stopPropagation(); onSessionDelete?.(session.id); }}
+                              title={isZh ? "删除对话" : "Delete"}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     ))}
@@ -222,6 +280,12 @@ export function NavigationSidebar({
               {activeCollectionId && (
                 <span className="absolute right-3 flex h-2 w-2 rounded-full bg-primary" />
               )}
+            </Button>
+
+            <Button variant="ghost" className="w-full justify-start gap-3 h-11"
+              onClick={() => { navigate("/api-docs"); onClose(); }}>
+              <Code2 className="h-4 w-4 shrink-0" />
+              <span>{isZh ? "API & MCP" : "API & MCP"}</span>
             </Button>
           </nav>
         </div>

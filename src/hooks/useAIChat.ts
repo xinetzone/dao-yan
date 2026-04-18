@@ -40,8 +40,12 @@ export function useAIChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Stable ref to latest messages — lets sendMessage use [] deps without stale closure
+  const messagesRef = useRef<Message[]>([]);
+  messagesRef.current = messages;
 
   const loadMessages = useCallback((msgs: Message[]) => {
+    messagesRef.current = msgs; // Sync ref so sendMessage reads correct history after loadMessages
     setMessages(msgs);
     setError(null);
   }, []);
@@ -72,6 +76,7 @@ export function useAIChat() {
 
     const blocks = new Map<number, { type: string; content: string }>();
     let receivedContentData = false; // true only when actual text/thinking content arrives
+    let errorHandled = false;        // true when catch block already sets error/cleans up
 
     try {
       await fetchEventSource(AI_CHAT_ENDPOINT, {
@@ -81,7 +86,7 @@ export function useAIChat() {
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
+          messages: [...messagesRef.current, userMessage].map(m => ({
             role: m.role, content: m.content,
           })),
           model,
@@ -153,7 +158,14 @@ export function useAIChat() {
               break;
             }
             case "content_block_delta": {
-              const block = blocks.get(data.index);
+              let block = blocks.get(data.index);
+              // Fallback: auto-register block if content_block_start was missed
+              if (!block && data.delta) {
+                const inferredType = data.delta.type === "thinking_delta" ? "thinking" : "text";
+                block = { type: inferredType, content: "" };
+                blocks.set(data.index, block);
+                console.warn(`[useAIChat] auto-created block ${data.index} as "${inferredType}" (missing content_block_start)`);
+              }
               if (block?.type === "thinking") {
                 block.content += data.delta.thinking || "";
                 if (block.content) receivedContentData = true;
@@ -170,17 +182,25 @@ export function useAIChat() {
               break;
             }
             case "message_stop": {
+              // Capture completion args outside the updater to keep updater pure
+              // React 18 concurrent mode may call updaters multiple times; side effects must be outside
+              let completionArgs: [Message, Message] | null = null;
               setMessages(prev => {
                 const updated = updateLastAssistant(prev, { isStreaming: false });
                 if (onComplete) {
                   const lastUser      = updated[updated.length - 2];
                   const lastAssistant = updated[updated.length - 1];
                   if (lastUser?.role === "user" && lastAssistant?.role === "assistant") {
-                    setTimeout(() => onComplete(lastUser, lastAssistant), 0);
+                    completionArgs = [lastUser, lastAssistant];
                   }
                 }
                 return updated;
               });
+              // Side effect outside the pure updater — called exactly once
+              if (completionArgs && onComplete) {
+                const [u, a] = completionArgs as [Message, Message];
+                setTimeout(() => onComplete(u, a), 0);
+              }
               break;
             }
           }
@@ -192,6 +212,7 @@ export function useAIChat() {
         },
       });
     } catch (err) {
+      errorHandled = true;  // catch block takes responsibility for error display + cleanup
       if (err instanceof Error && err.name === "AbortError") {
         // Timed out or user cancelled
         const isZh = i18n.language === "zh-CN";
@@ -207,12 +228,43 @@ export function useAIChat() {
       } else if (err instanceof Error) {
         setError(err.message || "Failed to send message");
         setMessages(prev => prev.slice(0, -1));
+      } else {
+        // Non-Error thrown (e.g. plain object from fetchEventSource)
+        const msg = typeof err === "string" ? err : (i18n.t("errors.api_error") || "Failed to send message");
+        setError(msg);
+        setMessages(prev => prev.slice(0, -1));
       }
     } finally {
       clearTimeout(timeoutId);
+      // Guard: handle the case where fetchEventSource resolved normally but no events arrived
+      // (server closed SSE connection without sending data — e.g. transient edge-function error)
+      // Also handle: stream closed mid-way without message_stop (partial stream)
+      if (!receivedContentData) {
+        // No content at all — remove the pending assistant bubble (updater is idempotent:
+        // if catch already removed it, prev won't end with an isStreaming assistant)
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && last.isStreaming) return prev.slice(0, -1);
+          return prev;
+        });
+        // Show an error only if catch block hasn't already shown one
+        if (!errorHandled) {
+          const isZh = i18n.language === "zh-CN";
+          setError(isZh ? "响应中断，请稍后重试" : "Connection closed unexpectedly, please try again");
+        }
+      } else {
+        // Content arrived but message_stop never fired (rare) — mark stream as done
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && last.isStreaming) {
+            return updateLastAssistant(prev, { isStreaming: false });
+          }
+          return prev;
+        });
+      }
       setIsLoading(false);
     }
-  }, [messages]);
+  }, []);  // empty deps — uses messagesRef.current for latest messages
 
   const cancel = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -230,7 +282,7 @@ function updateLastAssistant(messages: Message[], updates: Partial<Message>): Me
   const updated = [...messages];
   const last = updated[updated.length - 1];
   if (last?.role === "assistant") {
-    Object.assign(last, updates);
+    updated[updated.length - 1] = { ...last, ...updates };
   }
   return updated;
 }

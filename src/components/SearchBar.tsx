@@ -3,6 +3,7 @@ import { Send, Loader2, Globe, FolderOpen, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { MAX_MESSAGE_LENGTH } from "@/config";
+import { ModelSelector } from "@/components/ModelSelector";
 
 interface SearchBarProps {
   onSubmit: (query: string) => void;
@@ -14,6 +15,8 @@ interface SearchBarProps {
   onWebSearchToggle?: () => void;
   onDocPanelOpen?: () => void;
   activeCollectionId?: string | null;
+  selectedModelId: string;
+  onModelChange: (modelId: string) => void;
 }
 
 export function SearchBar({
@@ -26,6 +29,8 @@ export function SearchBar({
   onWebSearchToggle,
   onDocPanelOpen,
   activeCollectionId,
+  selectedModelId,
+  onModelChange,
 }: SearchBarProps) {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === "zh-CN";
@@ -132,6 +137,12 @@ export function SearchBar({
               )}
             </button>
           )}
+
+          <ModelSelector
+            selectedModelId={selectedModelId}
+            onModelChange={onModelChange}
+            disabled={isLoading}
+          />
         </div>
 
         {/* Character counter (shows when >80% of limit) */}
