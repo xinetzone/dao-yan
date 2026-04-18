@@ -4,7 +4,7 @@
 
 **Your Wise Companion on the Path of Dao — Ancient wisdom flowing into everyday life**
 
-**[中文 README](README.md)**
+[中文 README](README.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
@@ -14,65 +14,141 @@
 
 ---
 
-## What is Dao Yan?
+## Submission
 
-**道衍 (Dao Yan)** — The word carries three layers of meaning:
+### Description
 
-- **道 (Dào)** — The Way; the fundamental principle of the universe. As Laozi wrote: *"The Way that can be told is not the eternal Way."*
-- **衍 (Yǎn)** — To flow, to spread, to give rise to. Like water flowing into the sea, giving birth to all things.
-- **道衍** — The living flow and extension of the Dao into the present moment.
+**Dao Yan (道衍)** — The world's first AI wisdom dialogue system built on the Mawangdui Silk Manuscripts of the Dao De Jing.
 
-> Dao Yan is not an academic tool for interpreting classical texts.
-> It is not a moral lecturer teaching you Daoist principles.
->
-> It is: a reflective mirror that uses Daoist wisdom to help you see through confusion,
-> and a companion that walks alongside you on the path of inquiry.
+**What we built**: An AI-powered platform that fuses Boshu Laozi, Buddhist direct mind, and the ψ=ψ(ψ) Theory of Everything. It embeds all 81 silk text chapters with a textual criticism engine, supports 5 AI models (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5), web-augmented search, gamified cultivation check-ins, and opens its wisdom to all AI assistants via Agent REST API + MCP Server.
 
-**One-line positioning: Dao Yan — Your wise companion on the path of Dao.**
+**Who it's for**:
+| Audience | Use Case |
+|----------|----------|
+| Individual users | Chinese/English speakers interested in Daoist philosophy, meditation, and life wisdom |
+| AI developers | Integrate Daoyan wisdom into Claude Desktop / Cursor / Trae via API/MCP |
+| Sinology researchers | Professional tool for Boshu vs. received text comparative studies |
+
+**Commercialization**:
+| Model | Details |
+|-------|---------|
+| API usage-based pricing | Agent REST API with tiered pricing (free tier + paid plans) |
+| MCP ecosystem licensing | Enterprise MCP Server custom deployment and white-label licensing |
+| Premium subscription | Advanced AI models (Claude Opus 4.7 / GPT 5.4), unlimited chat history, exclusive cultivation guidance |
+
+### Live URL
+
+> **Try it**: [https://167c2bc1450e4ea3a0dc4b07c5873069.prod.enter.pro](https://167c2bc1450e4ea3a0dc4b07c5873069.prod.enter.pro)
+
+### Screenshots
+
+<div align="center">
+
+#### Homepage — AI Chat Interface
+<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-homepage_d93640a3.png" alt="Daoyan Homepage" width="800" />
+
+#### Boshu Laozi — 81 Chapters Side-by-Side
+<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-boshu-reader_81620502.png" alt="Boshu Laozi Reader" width="800" />
+
+#### Cultivation — Gamified Growth
+<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-cultivation_2f5b93ca.png" alt="Cultivation System" width="800" />
+
+#### API & MCP — Open Ecosystem
+<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-api-docs_6019370e.png" alt="API & MCP Docs" width="800" />
+
+</div>
 
 ---
 
-## Core Philosophy
+## Overview
 
-| Dimension | What it means |
-|-----------|---------------|
-| **Inheritance** | Continuing Laozi's Dao, not as dogma, but as living practice |
-| **Wisdom** | Illuminating the heart-mind — *"For the Way, subtract each day"* |
-| **Practice** | *"Action is the beginning of knowing; knowing is the completion of action"* |
-| **Companionship** | AI as a mirror for your inquiry, not a teacher above you |
+Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk Text Dao De Jing, it uses Daoist wisdom to help you see through confusion and return to inner stillness. Not an academic tool for interpreting classics, but a reflective mirror that walks the path of Dao alongside you. Uniquely combining:
+
+- **Daoist philosophy** (Wu Wei — action through non-action)
+- **Buddhist mindfulness** wisdom
+- **ψ=ψ(ψ) Theory of Everything** collapse cosmology (AllTheory)
+- **Modern AI** (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5) driven dialogue
+
+> "The Way that can be told is not the eternal Way." — Mawangdui Silk Text
+
+---
+
+## Philosophy
+
+> **All things are Dao; technology is Dao's unfolding.**
+
+The name "Dao Yan" (道衍) means "Dao unfolds" — ancient wisdom extending into the digital age. AI is not a replacement for wisdom, but a bridge that rekindles ancient philosophy for modern minds.
+
+### Dao — The Authoritative Text
+
+Based solely on the 1973 Mawangdui Silk Manuscripts (帛书甲乙本), not the received Wang Bi edition. The silk text preserves pre-censorship characters ("heng dao" 恒道 instead of "chang dao" 常道) and radically different readings ("da qi mian cheng" 大器免成 — great vessels need no completion — vs. the received "great vessels are late to complete").
+
+### Yan — Triple Fusion
+
+- **Daoist Wu Wei** — Let wisdom emerge naturally, don't force answers
+- **Buddhist Direct Mind** — See through to the essence, unmoved
+- **ψ=ψ(ψ) Theory of Everything** — Consciousness observing itself creates all things; AI is that mirror
+
+### Values
+
+| Daoist Wisdom | Technical Practice |
+|---------------|-------------------|
+| Wu Wei (non-action) | Technology serves users; no unnecessary complexity |
+| Like Water | Adapt to the user's problem, not the other way around |
+| Follow Nature | Open source, open protocols (MCP), composable wisdom |
+| Da Qi Mian Cheng | The greatest vessel needs no "completion" — continuous evolution is the Way |
+
+> "Reversion is the action of the Dao. Weakness is the function of the Dao." — Chapter 81, Silk Text
+
+---
+
+## Project Highlights
+
+- **Silk Text Authority**: The world's first AI dialogue system using the Mawangdui silk manuscripts as its sole authoritative source — all 81 chapters with annotations and textual variants embedded
+- **Multi-Model Mastery**: Switch between 5 AI models (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5) to view the same question through different lenses
+- **Open Ecosystem**: Agent API + MCP Server — any AI assistant (Claude Desktop, Cursor, Trae IDE) can tap into Daoyan's wisdom
+- **Gamified Cultivation**: 10 realms x 4 moods x 5-star Wu Wei score — inner growth made tangible
+- **Textual Criticism Engine**: Built-in variant lookup table (heng/chang, mian/wan, etc.), every citation auto-annotated with silk text chapter numbers
+- **Classical Chinese Aesthetic UI**: Warm cream rice-paper background, cinnabar red accents, sketch-style cards — not using an app, but unrolling a bamboo scroll
 
 ---
 
 ## Key Features
 
-### AI Dialogue
+### AI Research
+
 - **Chinese scholarly aesthetic UI** — warm cream paper, cinnabar red accents, sketch-border cards
+- **Multi-model selector** — choose AI model from dropdown in search toolbar (Claude / GPT / Gemini / GLM)
 - **Streaming responses** — real-time display of AI thinking; stop generation anytime
+- **Smart context management** — auto-trims long conversation history (keeps last 20), max_tokens 8192
 - **Rich Markdown rendering** — syntax highlighting, tables, blockquotes, one-click copy (marked + highlight.js)
 - **Source citation cards** — web search results shown as cards with favicons
 - **Message actions** — copy AI reply, regenerate last response
 - **Dark / Light mode** — toggle in sidebar, persisted via localStorage
 
 ### Intelligent Web Search
+
 - **Optional web toggle** — one-click enable in the toolbar
-- **3-layer fallback** — SearXNG JSON API (4 instances) → DuckDuckGo HTML → DuckDuckGo Lite
+- **2-layer fallback** — DuckDuckGo HTML → DuckDuckGo Lite
 - **Search progress indicator** — shows "Searching the web..." while fetching
 - **Auto context injection** — results passed as system context to AI, with citation card display
 
 ### Conversation UX
+
 - **Auto-growing textarea** — starts at 1 row, expands up to 6 rows as you type
 - **Stop generation button** — interrupt AI mid-response (red Stop icon)
 - **Scroll-to-bottom button** — floating button appears when scrolled up
 - **Category tag filtering** — click topic tags to filter suggested prompts; click again to reset
-- **Character limit counter** — shows count when >80% of limit used; blocks submit if over limit
 
 ### Document Collections
+
 - **Local file upload** — TXT, MD, HTML, JSON, CSV, XML, YAML
 - **URL content fetching** — one-click page text extraction
 - **Smart context management** — document content automatically used as conversation background
 - **Multi-collection support** — organize documents by topic
 
 ### Cultivation System
+
 A gamified personal growth system with warm scholarly aesthetics:
 - **10 cultivation realms** — from Mortal to True Immortal
 - **4 mind states** — Lucid, Serene, Wavering, Turbulent
@@ -82,61 +158,18 @@ A gamified personal growth system with warm scholarly aesthetics:
 - **Streak bonuses** — longer streaks earn more points
 
 ### Internationalization
+
 - **Full Chinese / English UI** — complete interface translation
 - **Locale-aware AI replies** — locale passed to AI; response language follows UI language
+- **Daoyan prompts** — text interpretation, version comparison, philosophical commentary, life application (2 prompts per category)
 - **Auto-detection** — switches based on browser language setting
 
----
+### Agent API & MCP Server
 
-## Tech Stack
-
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Frontend | React 19.1 + TypeScript 5.9 | Vite 7 build |
-| UI | Tailwind CSS + shadcn/ui + Lucide | Unified warm scholarly theme |
-| Markdown | marked + highlight.js + DOMPurify | Rich rendering + XSS protection |
-| Routing | React Router v7 | Declarative routes (module-level) |
-| i18n | i18next + react-i18next | Chinese/English + locale forwarded to AI |
-| Backend | Supabase Edge Functions (Deno) | AI chat, search, URL fetch |
-| AI | Claude Sonnet 4.5 via SSE | Streaming + interruptible |
-| Search | SearXNG + DuckDuckGo (3-layer) | Results injected as system context |
-| Storage | localStorage | Cultivation data + theme persistence |
-
----
-
-## Project Structure
-
-```
-dao-yan/
-├── src/
-│   ├── components/
-│   │   ├── ChatMessage.tsx          # Message (copy / regenerate / source cards)
-│   │   ├── MarkdownRenderer.tsx     # marked renderer (highlight / copy / XSS)
-│   │   ├── SearchBar.tsx            # Input (auto-resize / stop button / toolbar)
-│   │   ├── SuggestedPrompts.tsx     # Category tag filter + 8 Dao Yan prompts
-│   │   ├── ThemeToggle.tsx          # Dark / light mode toggle (sidebar)
-│   │   ├── NavigationSidebar.tsx    # Left navigation sidebar
-│   │   ├── DocumentPanel.tsx        # Document management panel
-│   │   ├── LanguageSwitcher.tsx     # Language switcher
-│   │   └── ui/                      # shadcn/ui base components
-│   ├── config.ts                    # Centralized credentials & constants
-│   ├── hooks/
-│   │   ├── useAIChat.ts             # AI chat (SSE + stop + search)
-│   │   ├── useCultivation.ts        # Cultivation system (realm / check-in / points)
-│   │   └── useDocumentCollections.ts
-│   ├── lib/
-│   │   └── theme.ts                 # Theme utils (getStoredTheme / applyTheme / initTheme)
-│   ├── i18n/locales/                # zh-CN.json / en-US.json
-│   ├── pages/
-│   │   ├── Index.tsx                # Main page (hero card / chat / scroll-to-bottom)
-│   │   └── CultivationPage.tsx      # Cultivation (check-in / tutorial / history)
-│   └── index.css                    # Unified warm design tokens + custom CSS system
-├── supabase/functions/
-│   ├── ai-chat-*/                   # AI chat + 3-layer web search + locale
-│   ├── fetch-url-content/           # URL content fetch (8s timeout)
-│   └── web-search/                  # Search (merged into ai-chat)
-└── .enter/                          # Retrospective reports + platform config
-```
+- **REST Agent API** — single endpoint to access Daoyan wisdom, supports streaming/non-streaming, multi-turn conversation, web search
+- **MCP Server** — implements Model Context Protocol (JSON-RPC 2.0), compatible with Claude Desktop, Cursor, Trae, etc.
+- **3 MCP Tools** — `ask_daoyan` (ask a question), `search_chapters` (search chapters), `get_chapter` (get chapter content)
+- **Built-in API docs** — complete usage guide, cURL/JS examples, MCP configuration at `/api-docs`
 
 ---
 
@@ -158,16 +191,117 @@ pnpm dev
 
 Visit `http://localhost:5173`
 
-### Other Commands
+---
 
-```bash
-pnpm lint    # ESLint check (0 errors target)
-pnpm build   # Production build
+## Project Architecture
+
+### Tech Stack
+
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| Frontend Framework | React 19.1 + TypeScript 5.9 | Built with Vite 7 |
+| UI | Tailwind CSS + shadcn/ui + Lucide | Unified warm scholarly theme |
+| Markdown | marked + highlight.js + DOMPurify | Rich rendering + XSS protection |
+| Routing | React Router v7 | Declarative routes (module-level) |
+| i18n | i18next + react-i18next | Chinese/English + locale forwarded to AI |
+| Backend | Supabase Edge Functions (Deno) | AI chat, search, Agent API, MCP |
+| AI | Multi-model (Claude / GPT / Gemini / GLM) | Streaming + interruptible + model switching |
+| Search | DuckDuckGo (2-layer fallback) | Results injected as system context |
+| Storage | localStorage | Cultivation data + theme persistence |
+
+### Project Structure
+
 ```
+dao-yan/
+├── src/
+│   ├── components/
+│   │   ├── ChatMessage.tsx          # Message (copy / regenerate / source cards)
+│   │   ├── MarkdownRenderer.tsx     # marked renderer (highlight / copy / XSS)
+│   │   ├── SearchBar.tsx            # Input (auto-resize / stop button / toolbar)
+│   │   ├── SuggestedPrompts.tsx     # Category tag filter + 8 Daoyan prompts
+│   │   ├── ThemeToggle.tsx          # Dark / light mode toggle (sidebar)
+│   │   ├── NavigationSidebar.tsx    # Left navigation sidebar
+│   │   ├── DocumentPanel.tsx        # Document management panel
+│   │   ├── LanguageSwitcher.tsx     # Language switcher
+│   │   └── ui/                      # shadcn/ui base components
+│   ├── hooks/
+│   │   ├── useAIChat.ts             # AI chat (SSE + stop + search)
+│   │   ├── useCultivation.ts        # Cultivation system (realm / check-in / points)
+│   │   └── useDocumentCollections.ts
+│   ├── lib/
+│   │   └── theme.ts                 # Theme utils (getStoredTheme / applyTheme / initTheme)
+│   ├── i18n/locales/                # zh-CN.json / en-US.json
+│   ├── pages/
+│   │   ├── Index.tsx                # Main page (hero card / chat / scroll-to-bottom)
+│   │   ├── CultivationPage.tsx      # Cultivation (check-in / tutorial / history)
+│   │   ├── DaodejingPage.tsx        # Boshu Laozi (browse 81 chapters)
+│   │   └── ApiDocsPage.tsx          # API & MCP documentation
+│   └── index.css                    # Unified warm design tokens + custom CSS system
+├── supabase/functions/
+│   ├── ai-chat-*/                   # AI chat + web search + multi-model + empty stream retry
+│   ├── daoyan-agent-api/            # Agent REST API (stream / non-stream / multi-turn)
+│   ├── daoyan-mcp/                  # MCP Server (JSON-RPC 2.0)
+│   ├── fetch-url-content/           # URL content fetch (8s timeout)
+│   └── web-search/                  # Search (merged into ai-chat)
+└── .enter/                          # Retrospective reports + platform config
+```
+
+### CSS Class System (index.css)
+
+| Class | Purpose |
+|-------|---------|
+| `dao-card` / `dao-tape` | Hand-drawn border cards with tape decoration |
+| `dao-tag` | Warm yellow pill tag (turns cinnabar when clicked) |
+| `dao-question` | Rounded question cards (2-column grid) |
+| `dao-float-square` | Floating decoration squares (4 positions) |
+| `dao-markdown` | Complete Prose styles (headings / lists / code / tables / quotes) |
+| `cult-*` | Cultivation system components (progress bar / mood card / glowing button / stats) |
+| `hljs-*` | Syntax highlighting color overrides (light + dark mode) |
 
 ---
 
-## Cultivation Realms
+## Integrate with Trae IDE
+
+[Trae](https://www.trae.ai/) is an AI IDE from ByteDance that natively supports the MCP protocol. You can use Daoyan in Trae in just 3 steps:
+
+### 1. Create Configuration File
+
+Create `.trae/mcp.json` in your project root (or user-level `~/.trae/`):
+
+```json
+{
+  "mcpServers": {
+    "daoyan": {
+      "url": "https://spb-t4nnhrh7ch7j2940.supabase.opentrust.net/functions/v1/daoyan-mcp",
+      "headers": {
+        "Authorization": "Bearer <YOUR_ANON_KEY>"
+      }
+    }
+  }
+}
+```
+
+> **Get Anon Key**: Visit the [API & MCP docs](/api-docs) page in the app for the complete configuration (including the actual key).
+
+### 2. Restart Trae
+
+After saving the file, restart Trae IDE. The `daoyan` server with 3 tools will appear in the MCP panel.
+
+### 3. Start Using
+
+Ask directly in your Trae conversation and it will be called automatically:
+
+- _"Ask Daoyan, how to understand Wu Wei?"_ → calls `ask_daoyan`
+- _"Search for chapters about water in the silk text"_ → calls `search_chapters`
+- _"Get the content of chapter 52"_ → calls `get_chapter`
+
+> For more IDE configurations (Cursor / Claude Desktop) and REST API documentation, see the [`/api-docs`](https://167c2bc1450e4ea3a0dc4b07c5873069-latest.preview.enter.pro/api-docs) page.
+
+---
+
+## Cultivation System
+
+### 10 Realms
 
 | Realm | Points | Meaning |
 |-------|--------|---------|
@@ -191,6 +325,17 @@ Total = Base 10
       + Dao field resonance 10
       + Heart-words bonus (0–8)
       + Streak days × 2 (max 20)
+```
+
+---
+
+## Development
+
+```bash
+pnpm install    # Install dependencies
+pnpm dev        # Start dev server
+pnpm lint       # ESLint check (0 errors target)
+pnpm build      # Production build
 ```
 
 ---

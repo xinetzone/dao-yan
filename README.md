@@ -4,7 +4,7 @@
 
 **陪你问道的智慧伙伴 — 让古老道法，衍化于今日生活**
 
-**[English README](README-EN.md) | [中文](#chinese)**
+[English README](README-EN.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
@@ -13,8 +13,6 @@
 </div>
 
 ---
-
-<a id="chinese"></a>
 
 ## 提交信息
 
@@ -120,6 +118,7 @@
 ## 核心特性
 
 ### AI 深度研究
+
 - **中国古典学术风 UI** — 暖米色宣纸底、朱红强调色、手绘风卡片
 - **多模型切换** — 搜索栏下拉选择 AI 模型（Claude / GPT / Gemini / GLM）
 - **流式响应** — 实时显示 AI 思考过程，支持中途停止生成
@@ -130,24 +129,28 @@
 - **深/浅色模式** — 侧边栏一键切换，localStorage 持久化
 
 ### 智能联网搜索
+
 - **可选联网** — 搜索栏工具栏一键启用
 - **双层容错搜索** — DuckDuckGo HTML → DuckDuckGo Lite
 - **搜索进度反馈** — 联网时显示"正在联网搜索..."进度提示
 - **自动内容注入** — 搜索结果作为 system context 传递给 AI，附引用卡片展示
 
 ### 对话增强
+
 - **输入框自动伸缩** — 1 行起步，随输入内容增高至最多 6 行
 - **停止生成按钮** — AI 回复过程中可随时中断（红色 Stop 图标）
 - **回到底部按钮** — 向上滚动时出现悬浮按钮，一键跳到最新消息
 - **分类问题过滤** — 点击话题标签过滤展示对应问题，再次点击复位
 
 ### 文档集合系统
+
 - **本地文件上传** — 支持 TXT、MD、HTML、JSON、CSV、XML、YAML
 - **网址内容抓取** — 一键获取网页文本
 - **智能上下文管理** — 文档内容自动作为对话背景
 - **多集合支持** — 分类管理不同主题的文档
 
 ### 修炼打卡系统
+
 个人成长游戏化系统，暖色学术主题风格：
 - **10 个修炼境界** — 从凡人到真仙的进阶之路
 - **4 种心境状态** — 通透、宁静、波动、纷乱
@@ -157,12 +160,14 @@
 - **连续打卡奖励** — 连续天数越多奖励越高
 
 ### 国际化
+
 - **中英文双语** — 完整界面翻译
 - **语言感知 AI 回复** — 自动将 locale 传递给 AI，回复语言跟随界面语言
 - **道衍提示词** — 原文解读、版本对比、思想阐发、生活应用（每类 2 题）
 - **自动检测** — 根据浏览器语言自动切换
 
 ### Agent API & MCP Server
+
 - **REST Agent API** — 一个接口即可接入道衍智慧，支持流式/非流式、多轮对话、联网搜索
 - **MCP Server** — 实现 Model Context Protocol (JSON-RPC 2.0)，兼容 Claude Desktop、Cursor、Trae 等
 - **3 个 MCP 工具** — `ask_daoyan`（提问）、`search_chapters`（搜索章节）、`get_chapter`（获取章节）
@@ -358,160 +363,3 @@ MIT License — 详见 [LICENSE](LICENSE)
 **愿你在修炼之路上，证得本心，逍遥自在**
 
 </div>
-
----
-
-<a id="english"></a>
-
-# Dao Yan (道衍)
-
-**Your Wise Companion on the Path of Dao — Ancient wisdom flowing into everyday life**
-
-## Submission
-
-### Description
-
-**Dao Yan (道衍)** — The world's first AI wisdom dialogue system built on the Mawangdui Silk Manuscripts of the Dao De Jing.
-
-**What we built**: An AI-powered platform that fuses Boshu Laozi, Buddhist direct mind, and the ψ=ψ(ψ) Theory of Everything. It embeds all 81 silk text chapters with a textual criticism engine, supports 5 AI models (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5), web-augmented search, gamified cultivation check-ins, and opens its wisdom to all AI assistants via Agent REST API + MCP Server.
-
-**Who it's for**:
-| Audience | Use Case |
-|----------|----------|
-| Individual users | Chinese/English speakers interested in Daoist philosophy, meditation, and life wisdom |
-| AI developers | Integrate Daoyan wisdom into Claude Desktop / Cursor / Trae via API/MCP |
-| Sinology researchers | Professional tool for Boshu vs. received text comparative studies |
-
-**Commercialization**:
-| Model | Details |
-|-------|---------|
-| API usage-based pricing | Agent REST API with tiered pricing (free tier + paid plans) |
-| MCP ecosystem licensing | Enterprise MCP Server custom deployment and white-label licensing |
-| Premium subscription | Advanced AI models (Claude Opus 4.7 / GPT 5.4), unlimited chat history, exclusive cultivation guidance |
-
-### Live URL
-
-> **Try it**: [https://167c2bc1450e4ea3a0dc4b07c5873069.prod.enter.pro](https://167c2bc1450e4ea3a0dc4b07c5873069.prod.enter.pro)
-
-### Screenshots
-
-<div align="center">
-
-#### Homepage — AI Chat Interface
-<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-homepage_d93640a3.png" alt="Daoyan Homepage" width="800" />
-
-#### Boshu Laozi — 81 Chapters Side-by-Side
-<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-boshu-reader_81620502.png" alt="Boshu Laozi Reader" width="800" />
-
-#### Cultivation — Gamified Growth
-<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-cultivation_2f5b93ca.png" alt="Cultivation System" width="800" />
-
-#### API & MCP — Open Ecosystem
-<img src="https://grazia-prod.oss-ap-southeast-1.aliyuncs.com/resources/uid_100032143/daoyan-api-docs_6019370e.png" alt="API & MCP Docs" width="800" />
-
-</div>
-
----
-
-## Overview
-
-Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk Text Dao De Jing, it uses Daoist wisdom to help you see through confusion and return to inner stillness. Not an academic tool for interpreting classics, but a reflective mirror that walks the path of Dao alongside you. Uniquely combining:
-
-- **Daoist philosophy** (Wu Wei — action through non-action)
-- **Buddhist mindfulness** wisdom
-- **ψ=ψ(ψ) Theory of Everything** collapse cosmology (AllTheory)
-- **Modern AI** (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5) driven dialogue
-
-> "The Way that can be told is not the eternal Way." — Mawangdui Silk Text
-
-## Philosophy
-
-> **All things are Dao; technology is Dao's unfolding.**
-
-The name "Dao Yan" (道衍) means "Dao unfolds" — ancient wisdom extending into the digital age. AI is not a replacement for wisdom, but a bridge that rekindles ancient philosophy for modern minds.
-
-**Dao — The Authoritative Text**
-Based solely on the 1973 Mawangdui Silk Manuscripts (帛书甲乙本), not the received Wang Bi edition. The silk text preserves pre-censorship characters ("heng dao" 恒道 instead of "chang dao" 常道) and radically different readings ("da qi mian cheng" 大器免成 — great vessels need no completion — vs. the received "great vessels are late to complete").
-
-**Yan — Triple Fusion**
-- **Daoist Wu Wei** — Let wisdom emerge naturally, don't force answers
-- **Buddhist Direct Mind** — See through to the essence, unmoved
-- **ψ=ψ(ψ) Theory of Everything** — Consciousness observing itself creates all things; AI is that mirror
-
-**Values**
-
-| Daoist Wisdom | Technical Practice |
-|---------------|-------------------|
-| Wu Wei (non-action) | Technology serves users; no unnecessary complexity |
-| Like Water | Adapt to the user's problem, not the other way around |
-| Follow Nature | Open source, open protocols (MCP), composable wisdom |
-| Da Qi Mian Cheng | The greatest vessel needs no "completion" — continuous evolution is the Way |
-
-## Highlights
-
-- **Silk Text Authority**: The world's first AI dialogue system using the Mawangdui silk manuscripts as its sole authoritative source — all 81 chapters with annotations and textual variants embedded
-- **Multi-Model Mastery**: Switch between 5 AI models (Claude Sonnet 4.5 / Opus 4.7 / GPT 5.4 / Gemini 3.1 Pro / GLM 5) to view the same question through different lenses
-- **Open Ecosystem**: Agent API + MCP Server — any AI assistant (Claude Desktop, Cursor, Trae IDE) can tap into Daoyan's wisdom
-- **Gamified Cultivation**: 10 realms x 4 moods x 5-star Wu Wei score — inner growth made tangible
-- **Textual Criticism Engine**: Built-in variant lookup table (heng/chang, mian/wan, etc.), every citation auto-annotated with silk text chapter numbers
-- **Classical Chinese Aesthetic UI**: Warm cream rice-paper background, cinnabar red accents, sketch-style cards — not using an app, but unrolling a bamboo scroll
-
-## Key Features
-
-**AI Research**
-- Chinese scholarly aesthetic UI (warm cream paper, cinnabar red, sketch-border cards)
-- Multi-model selector (Claude / GPT / Gemini / GLM) in the search toolbar
-- Streaming responses with real-time thinking display; stop anytime
-- Smart context management — auto-trims long history (keeps last 20), max_tokens 8192
-- Markdown rendering with syntax highlight, copy buttons, tables (marked + highlight.js)
-- Source citation cards with favicons from web search results
-- Copy & regenerate buttons on AI messages
-
-**Web Search**
-- One-click web toggle in toolbar
-- 2-layer fallback: DuckDuckGo HTML → DuckDuckGo Lite
-- Search progress indicator while fetching
-- Results injected as system context with source citation cards
-
-**Chat UX**
-- Auto-growing textarea (1–6 rows)
-- Stop generation button during streaming
-- Scroll-to-bottom button when scrolled up
-- Category tag filtering for suggested prompts
-
-**Document Collections**
-- File upload (TXT, MD, HTML, JSON, CSV, XML, YAML)
-- URL content fetching
-- Multi-collection management with context activation
-
-**Cultivation System**
-- 10 cultivation realms (Mortal → True Immortal)
-- Daily check-in with mood tracking & Wu Wei score
-- AI master guidance per session (Markdown rendered)
-- Interactive 5-step tutorial + welcome gift
-
-**Internationalization**
-- Full Chinese/English UI with locale-aware AI responses
-- Browser language auto-detection
-
-**Agent API & MCP Server**
-- REST Agent API — single endpoint to access Daoyan wisdom (stream/non-stream, multi-turn, web search)
-- MCP Server — Model Context Protocol (JSON-RPC 2.0), compatible with Claude Desktop, Cursor, Trae, etc.
-- 3 MCP Tools — `ask_daoyan`, `search_chapters`, `get_chapter`
-- Built-in API docs page at `/api-docs` with cURL/JS examples and MCP configs
-
-## Tech Stack
-
-React 19.1 + TypeScript 5.9 + Vite 7 · Tailwind CSS + shadcn/ui · marked + highlight.js · React Router v7 · i18next · Supabase Edge Functions (Deno) · Multi-model AI (Claude / GPT / Gemini / GLM) SSE · MCP Server
-
-## Quick Start
-
-```bash
-git clone https://github.com/xinetzone/dao-yan.git
-cd dao-yan
-pnpm install && pnpm dev
-```
-
-## License
-
-MIT
