@@ -136,6 +136,18 @@ const response = await fetch("${AGENT_API_ENDPOINT}", {
   }
 }`;
 
+  const mcpTraeConfig = `// .trae/mcp.json
+{
+  "mcpServers": {
+    "daoyan": {
+      "url": "${MCP_ENDPOINT}",
+      "headers": {
+        "Authorization": "Bearer YOUR_ANON_KEY"
+      }
+    }
+  }
+}`;
+
   const mcpClaudeConfig = `// claude_desktop_config.json
 {
   "mcpServers": {
@@ -327,6 +339,14 @@ curl -X POST "${MCP_ENDPOINT}" \\
               {isZh ? "Cursor 配置" : "Cursor Configuration"}
             </h3>
             <CodeBlock code={mcpCursorConfig} language="json" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-medium text-foreground flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              {isZh ? "Trae IDE 配置（字节跳动）" : "Trae IDE Configuration (ByteDance)"}
+            </h3>
+            <CodeBlock code={mcpTraeConfig} language="json" />
           </div>
 
           <div className="space-y-2">

@@ -78,7 +78,7 @@
 
 ### Agent API & MCP Server
 - **REST Agent API** — 一个接口即可接入道衍智慧，支持流式/非流式、多轮对话、联网搜索
-- **MCP Server** — 实现 Model Context Protocol (JSON-RPC 2.0)，兼容 Claude Desktop、Cursor 等
+- **MCP Server** — 实现 Model Context Protocol (JSON-RPC 2.0)，兼容 Claude Desktop、Cursor、Trae 等
 - **3 个 MCP 工具** — `ask_daoyan`（提问）、`search_chapters`（搜索章节）、`get_chapter`（获取章节）
 - **API 文档页** — 内置完整使用指南、cURL/JS 示例、MCP 配置方法（`/api-docs`）
 
@@ -168,6 +168,43 @@ dao-yan/
 | `dao-markdown` | 全套 Prose 样式（标题/列表/代码/表格/引用） |
 | `cult-*` | 修炼系统组件（进度条/心境卡/按钮发光/统计） |
 | `hljs-*` | 代码高亮颜色覆盖（浅色 + 深色） |
+
+---
+
+## 接入 Trae IDE
+
+[Trae](https://www.trae.ai/) 是字节跳动出品的 AI IDE，原生支持 MCP 协议。只需 3 步即可在 Trae 中使用道衍：
+
+### 1. 创建配置文件
+
+在项目根目录（或用户级 `~/.trae/`）创建 `.trae/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "daoyan": {
+      "url": "https://spb-t4nnhrh7ch7j2940.supabase.opentrust.net/functions/v1/daoyan-mcp",
+      "headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiIsInJlZiI6InNwYi10NG5uaHJoN2NoN2oyOTQwIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzYwNzQ1MjMsImV4cCI6MjA5MTY1MDUyM30.5GFdUIA3rHOUoCI99ocBzBxDZjjQxOHRV-T6CKiHzCQ"
+      }
+    }
+  }
+}
+```
+
+### 2. 重启 Trae
+
+保存文件后重启 Trae IDE，MCP 面板中会出现 `daoyan` 服务器及 3 个工具。
+
+### 3. 开始使用
+
+在 Trae 对话中直接提问即可自动调用：
+
+- _"帮我问问道衍，如何理解无为而治？"_ → 调用 `ask_daoyan`
+- _"搜索帛书中关于水的章节"_ → 调用 `search_chapters`
+- _"获取帛书第52章内容"_ → 调用 `get_chapter`
+
+> 更多 IDE 配置（Cursor / Claude Desktop）及 REST API 文档详见 [`/api-docs`](https://167c2bc1450e4ea3a0dc4b07c5873069-latest.preview.enter.pro/api-docs) 页面。
 
 ---
 
@@ -293,7 +330,7 @@ Dao Yan is your wise companion on the path of Dao. Rooted in the Mawangdui Silk 
 
 **Agent API & MCP Server**
 - REST Agent API — single endpoint to access Daoyan wisdom (stream/non-stream, multi-turn, web search)
-- MCP Server — Model Context Protocol (JSON-RPC 2.0), compatible with Claude Desktop, Cursor, etc.
+- MCP Server — Model Context Protocol (JSON-RPC 2.0), compatible with Claude Desktop, Cursor, Trae, etc.
 - 3 MCP Tools — `ask_daoyan`, `search_chapters`, `get_chapter`
 - Built-in API docs page at `/api-docs` with cURL/JS examples and MCP configs
 
