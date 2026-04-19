@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <link href="/favicon.ico" rel="icon shortcut">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Primary Meta Tags -->
+  <title>道衍 - 帛书老子智慧修行平台</title>
+  <meta name="title" content="道衍 - 帛书老子智慧修行平台" />
+  <meta name="description" content="探索马王堆帛书版《道德经》的智慧，融合帛书原文、传世版对照、现代解读与 AI 智慧引导。提供 81 章注读、修行打卡、智慧对话等功能，帮助你深入理解老子哲学。" />
+  <meta name="keywords" content="道德经,帛书,老子,马王堆,道家哲学,修行打卡,AI对话,国学,中国哲学,道衍" />
+  <meta name="author" content="秦波" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://dao-yan.enter.pro/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://dao-yan.enter.pro/" />
+  <meta property="og:title" content="道衍 - 帛书老子智慧修行平台" />
+  <meta property="og:description" content="探索马王堆帛书版《道德经》的智慧，融合帛书原文、传世版对照、现代解读与 AI 智慧引导。" />
+  <meta property="og:image" content="https://dao-yan.enter.pro/og-image.jpg" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta property="og:locale:alternate" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://dao-yan.enter.pro/" />
+  <meta name="twitter:title" content="道衍 - 帛书老子智慧修行平台" />
+  <meta name="twitter:description" content="探索马王堆帛书版《道德经》的智慧，融合帛书原文、传世版对照、现代解读与 AI 智慧引导。" />
+  <meta name="twitter:image" content="https://dao-yan.enter.pro/og-image.jpg" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "道衍",
+    "alternateName": "DaoYan",
+    "description": "帛书老子智慧修行平台，提供帛书道德经81章注读、修行打卡、AI智慧对话等功能",
+    "url": "https://dao-yan.enter.pro/",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "秦波"
+    },
+    "inLanguage": ["zh-CN", "en-US"],
+    "keywords": "道德经, 帛书, 老子, 马王堆, 道家哲学, 修行, AI"
+  }
+  </script>
+  <script type="module" crossorigin src="/assets/index-5R1xbQ9R.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CqkHbQRf.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900;950&family=Poppins:wght@100;200;300;400;500;600;700;800;900;950&family=Roboto:wght@100;200;300;400;500;600;700;800;900;950&display=swap" rel="stylesheet">
+
+  <script>
+    (function() {
+      window.__earlyErrors__ = [];
+      window.__earlyConsoleLogs__ = [];
+      
+      const earlyErrorHandler = function(event) {
+        window.__earlyErrors__.push({
+          type: 'error',
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          error: event.error ? {
+            name: event.error.name,
+            message: event.error.message,
+            stack: event.error.stack
+          } : null,
+          timestamp: Date.now()
+        });
+      };
+      window.addEventListener('error', earlyErrorHandler, true);
+      
+      const earlyRejectionHandler = function(event) {
+        const reason = event.reason;
+        window.__earlyErrors__.push({
+          type: 'unhandledrejection',
+          reason: reason instanceof Error ? {
+            name: reason.name,
+            message: reason.message,
+            stack: reason.stack
+          } : String(reason),
+          timestamp: Date.now()
+        });
+      };
+      window.addEventListener('unhandledrejection', earlyRejectionHandler, true);
+      
+      const originalConsoleError = console.error;
+      const originalConsoleWarn = console.warn;
+      
+      console.error = function(...args) {
+        originalConsoleError.apply(console, args);
+        
+        window.__earlyConsoleLogs__.push({
+          type: 'error',
+          args: args.map(arg => {
+            if (arg instanceof Error) {
+              return {
+                name: arg.name,
+                message: arg.message,
+                stack: arg.stack
+              };
+            }
+            try {
+              return String(arg);
+            } catch {
+              return '[Unstringifiable]';
+            }
+          }),
+          timestamp: Date.now()
+        });
+      };
+      
+      console.warn = function(...args) {
+        originalConsoleWarn.apply(console, args);
+        
+        window.__earlyConsoleLogs__.push({
+          type: 'warn',
+          args: args.map(arg => {
+            try {
+              return String(arg);
+            } catch {
+              return '[Unstringifiable]';
+            }
+          }),
+          timestamp: Date.now()
+        });
+      };
+      
+      window.__cleanupEarlyErrorHandlers__ = function() {
+        window.removeEventListener('error', earlyErrorHandler, true);
+        window.removeEventListener('unhandledrejection', earlyRejectionHandler, true);
+        
+        console.error = originalConsoleError;
+        console.warn = originalConsoleWarn;
+        
+        delete window.__cleanupEarlyErrorHandlers__;
+      };
+    })();
+    
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'inject-script') {
+        try {
+          console.log('Executing injector script in sandbox...');
+
+          const script = document.createElement('script');
+          script.textContent = event.data.script;
+          document.head.appendChild(script);
+          console.log('Injector script executed successfully');
+        } catch (error) {
+          console.error('Failed to execute injector script:', error);
+        }
+      }
+    });
+
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+</body>
+
+</html>
